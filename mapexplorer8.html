@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL 2D Map Exploration with Looping Borders (Touchscreen+ArrowKeys)</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; border: 1px solid white;}
+    </style>
+</head>
+<body>
+    <canvas id="webglCanvas"></canvas>
+    <script>
+    try{
+        const canvas = document.getElementById('webglCanvas');
+        const gl = canvas.getContext('webgl');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        if (!gl) {
+            console.error("WebGL not supported");
+            throw "no webgl";
+        }
+
+        // Loading Textures
+        const textureURLs = [
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Sierpinski_carpet_6.svg/1024px-Sierpinski_carpet_6.svg.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedro.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedro2.png',
+        ];
+
+        let textureImages = [];
+        textureURLs.forEach(url => {
+            const textureImage = new Image();
+            textureImage.crossOrigin = '*';
+            textureImage.src = url;
+            textureImages.push(textureImage);
+        });
+
+        Promise.all(Array.from(textureImages).map(img => {
+            if (img.complete)
+                return Promise.resolve(img.naturalHeight !== 0);
+            return new Promise(resolve => {
+                img.addEventListener('load', () => resolve(true));
+                img.addEventListener('error', () => resolve(false));
+            });
+        })).then(results => {
+            if (results.every(res => res)){
+                console.info('all images loaded successfully');
+                initWebGL();
+            }
+            else
+                console.error('some images failed to load, all finished loading');
+        });
+
+        let backgroundImage = textureImages[0];
+        let protagonistImage = textureImages[1];
+        let protagonistImage2 = textureImages[2];
+
+        let protagonistWalking = false;
+
+        function initWebGL() {
+            // Vertex shader program
+            const vertexShaderSource = `
+                attribute vec3 a_position;
+                attribute vec2 a_texCoord;
+                varying vec2 v_texCoord;
+                uniform vec2 u_offset;
+                uniform float u_aspectRatio;
+
+                const float far = 100.0; //farthest distance visible to camera
+                const float near = 0.1; //closest distance visible to camera
+                const float fov = radians(25.0); //vertical y axis field of view of the camera
+                const float f = 1.0 / tan(fov/2.0);                
+
+                //projection and camera matrices
+                mat4 projection = mat4(f/u_aspectRatio, 0.0, 0.0, 0.0, 
+                                       0.0, f, 0.0, 0.0,
+                                       0.0, 0.0, (near + far)/(near-far), 1.0,
+                                       0.0, 0.0, (near * far * 2.0)/(near-far), 1.0);
+
+                mat4 camera = mat4(1.0, 0.0, 0.0, 0.0, 
+                                   0.0, 1.0, 0.0, 0.0,
+                                   0.0, 0.0, 1.0, 0.0,
+                                   0.0, 0.0, 1.0, 1.0);
+
+                void main() {
+                    gl_Position = projection * camera * vec4(a_position, 1.0);
+                    v_texCoord = vec2(a_texCoord.x, 1.0 - a_texCoord.y) - u_offset;
+                }
+            `;
+
+            // Fragment shader program
+            const fragmentShaderSource = `
+                precision mediump float;
+                varying vec2 v_texCoord;
+                uniform sampler2D u_texture;
+                void main() {
+                    gl_FragColor = texture2D(u_texture, v_texCoord) ;
+                }
+            `;
+
+            // Shader compilation and linking utility functions
+            function compileShader(source, type) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error("ERROR compiling shader: " + gl.getShaderInfoLog(shader));
+                }
+                return shader;
+            }
+
+            function createProgram(vertexShader, fragmentShader) {
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    console.error("ERROR linking program: " + gl.getProgramInfoLog(program));
+                }
+                return program;
+            }
+
+            // Create shaders and program
+            const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+            const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+            const program = createProgram(vertexShader, fragmentShader);
+            gl.useProgram(program);
+
+            // Get locations of the attributes and uniforms
+            const positionLocation = gl.getAttribLocation(program, "a_position");
+            const texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+            const offsetLocation = gl.getUniformLocation(program, "u_offset");
+            const textureLocation = gl.getUniformLocation(program, "u_texture");
+            const aspectRatioLocation = gl.getUniformLocation(program, "u_aspectRatio");
+
+            // Define the square vertices for the "map object" (coordinates for texture mapping)
+            const backgroundVertices = new Float32Array([
+                -1,  1, 1.5, 0.0, 1.0,
+                -1, -1, 0.0, 0.0, 0.0,
+                 1,  1, 1.5, 1.0, 1.0,
+                -1, -1, 0.0, 0.0, 0.0,
+                 1,  1, 1.5, 1.0, 1.0,
+                 1, -1, 0.0, 1.0, 0.0,
+            ]);
+
+            // Define the square vertices for the "protagonist object" (coordinates for texture mapping)
+            const protagonistVertices = new Float32Array([
+                -0.0625,  0.0625, 0.0, 0.0, 1.0,
+                -0.0625, -0.0625, 0.0, 0.0, 0.0,
+                 0.0625,  0.0625, 0.0, 1.0, 1.0,
+                -0.0625, -0.0625, 0.0, 0.0, 0.0,
+                 0.0625,  0.0625, 0.0, 1.0, 1.0,
+                 0.0625, -0.0625, 0.0, 1.0, 0.0,
+            ]);
+
+
+
+            // Create buffer and load data
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, backgroundVertices, gl.STATIC_DRAW);
+
+            gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+            gl.enableVertexAttribArray(texCoordLocation);
+
+            // Create the background texture
+            let backgroundTexture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, backgroundTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, backgroundImage);
+            gl.generateMipmap(gl.TEXTURE_2D);
+
+            // Create the protagonist texture
+            let protagonistTexture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, protagonistTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, protagonistImage);
+            gl.generateMipmap(gl.TEXTURE_2D);
+
+            // Set texture wrapping and filtering
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+            // Create the 2nd protagonist texture
+            let protagonistTexture2 = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, protagonistTexture2);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, protagonistImage2);
+            gl.generateMipmap(gl.TEXTURE_2D);
+
+            // Set texture wrapping and filtering
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+            // Variables for world offset and touch movement
+            let worldOffsetX = 0;
+            let worldOffsetY = 0;
+            let lastTouchX = 0;
+            let lastTouchY = 0;
+
+            // Handle touch events
+            canvas.addEventListener('touchstart', (event) => {
+                event.preventDefault();
+                if (event.touches.length === 1) {
+                    lastTouchX = event.touches[0].clientX;
+                    lastTouchY = event.touches[0].clientY;
+                }
+            });
+
+            window.addEventListener('resize', (event) => {
+                event.preventDefault();
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            });
+
+            canvas.addEventListener('touchmove', (event) => {
+                event.preventDefault();
+                if (event.touches.length === 1) {
+                    const touchX = event.touches[0].clientX;
+                    const touchY = event.touches[0].clientY;
+
+                    // Calculate the difference in movement
+                    const dx = (touchX - lastTouchX) / window.innerWidth;
+                    const dy = (touchY - lastTouchY) / window.innerHeight;
+
+                    // Update world offset based on touch movement
+                    worldOffsetX += dx;
+                    worldOffsetY -= dy;
+
+                    lastTouchX = touchX;
+                    lastTouchY = touchY;
+                }
+            });
+
+            let keys = {};
+            window.addEventListener('keyup', (event) => {
+                event.preventDefault();
+                keys[event.key] = false;
+                if(!keys["ArrowUp"] && !keys["ArrowDown"])
+                if(!keys["ArrowLeft"] && !keys["ArrowRight"])
+                    protagonistWalking = false;
+            });
+             
+            window.addEventListener('keydown', (event) => {
+                event.preventDefault();
+                keys[event.key] = true;
+                protagonistWalking = true;
+            });
+
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.GREATER);
+           
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+
+            let protagonistCurrentTexture = protagonistTexture;
+            let previousTime = 0;
+
+            // Render function to draw the map with texture
+            function render(time) {
+                let dt = time - previousTime;
+
+                // Set the aspect ratio uniform
+                gl.uniform1f(aspectRatioLocation, canvas.width/canvas.height);
+
+                // Set the viewport to match the size of the canvas, in case the canvas resizes
+                gl.viewport(0, 0, canvas.width, canvas.height);
+
+                gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set background color
+                gl.clearDepth(0.0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+                // BACKGROUND DRAW
+                // Set the world offset (camera offset) and draw the textured object
+                gl.uniform2f(offsetLocation, worldOffsetX, worldOffsetY);
+
+                // Choosing the texture
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, backgroundTexture);
+                gl.uniform1i(textureLocation, 0);
+
+                // Draw
+                gl.bufferData(gl.ARRAY_BUFFER, backgroundVertices, gl.STATIC_DRAW);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+
+
+                // PROTAGONIST DRAW
+                // Set the world offset (camera offset) and draw the textured object
+                gl.uniform2f(offsetLocation, 0, 0);
+
+                // Choosing the texture
+                gl.activeTexture(gl.TEXTURE0);
+                if(protagonistWalking){
+                    if(dt > 200){
+                        if(protagonistCurrentTexture == protagonistTexture){
+                            protagonistCurrentTexture = protagonistTexture2;
+                        }else{
+                            protagonistCurrentTexture = protagonistTexture;
+                        }
+                        previousTime = time;
+                    }
+                }
+
+                gl.bindTexture(gl.TEXTURE_2D, protagonistCurrentTexture);
+                gl.uniform1i(textureLocation, 0);
+
+                // Draw
+                gl.bufferData(gl.ARRAY_BUFFER, protagonistVertices, gl.STATIC_DRAW);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+
+
+                // CONTROLS
+                const d = 0.003; //delta or offset change
+                if(keys["ArrowLeft"]){ worldOffsetX += d; }
+                if(keys["ArrowUp"]){ worldOffsetY += d; }
+                if(keys["ArrowRight"]){ worldOffsetX -= d; }
+                if(keys["ArrowDown"]){ worldOffsetY -= d; }
+
+                // Handle world looping (wrap around the edges)
+                if (worldOffsetX > 1) worldOffsetX = -1; // Wrap to the left
+                if (worldOffsetX < -1) worldOffsetX = 1; // Wrap to the right
+                if (worldOffsetY > 1) worldOffsetY = -1; // Wrap to the bottom
+                if (worldOffsetY < -1) worldOffsetY = 1; // Wrap to the top
+
+                requestAnimationFrame(render);
+            }
+
+            // Start the rendering loop
+            render(0);
+        }
+    }catch(e){
+        console.log("PROGRAM EXIT :", e);
+    }
+    </script>
+</body>
+</html>
