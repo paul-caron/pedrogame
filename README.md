@@ -1,2 +1,2 @@
 # webglstuff
-some stuff and things
+2D webgl stuff
