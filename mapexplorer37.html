@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedro Escobar</title>
+    <style>
+        body { user-select: none; margin: 0;}
+        #dialogBox {
+            width: 100%;
+            text-align: center;
+            text-shadow: -2px 2px 0px black, 2px 2px 0px black,
+                         -2px -2px 0px black, 2px -2px 0px black ;
+            color: #B77;
+            font-weight: bolder;
+            font-size: 3em;
+            z-index:2;
+            position: fixed;
+            left:0px;
+            top:2em;
+            white-space: pre-wrap; 
+        }
+        #buttons {
+        	visibility: hidden;
+        }
+        button {
+        	position: fixed;
+            z-index:10;
+            font-size: 3em;
+            height: 1em;
+            width: 1em;
+            font-style: new courier, monospace;
+            border-radius: 50%;
+            padding: 0px 0px 0px 0px;
+            margin: 0px 0px 0px 0px;
+            border: 2px solid brown;
+        }
+        canvas { display: block; border: 1px solid white;}
+    </style>
+</head>
+<body>
+    <pre id="dialogBox"></pre>
+    <div id="buttons">
+    <button id="left" style="left: 0em; bottom: 4em;" >&nbsp;</button>
+    <button id="up" style="left: 1em; bottom: 5em;">&nbsp;</button>
+    <button id="right" style="left: 2em; bottom: 4em;">&nbsp;</button>
+    <button id="down" style="left: 1em; bottom: 3em;">&nbsp;</button>
+    <button id="attack" style="right: 1em; bottom: 4em;"></button>
+    </div> 
+    <audio id="hardgroove" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedrohard.mp3" type="audio/mp3" preload="auto" loop>
+    </audio > 
+    <audio id="ether" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedroEther.mp3" type="audio/mp3" preload="auto" loop>
+    </audio > 
+    <button onClick="audio.play();">🎵</button>
+    <canvas id="webglCanvas"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+    <script>
+    let audio = document.querySelector("#hardgroove");
+    // Drawable Tile Class
+    class Drawable{
+        constructor(gl, program, textures, vertices, x = 0, y = 0, z = 0){ //(WebglContext, WebglTextures, VerticesArray (x,y,z,u,v), x, y, z)
+            this.gl = gl;
+            this.program = program;
+            this.textures = textures;
+            this.textureIndex = 0; // index to active texture
+            this.vertices = vertices;
+            this.positionOffset = [0,0,0];
+            this.textureOffset = [0,0];
+            this.animations = {
+                                  "idle":
+                                  {
+                                      "timePerFrame": 0, // time between animation frames
+                                      "counter": 0,      // time counter for time left until next texture is displayed
+                                      "textureIndices": [0], // texture indices in order of appearance in the animation
+                                      "indexPointer": 0, // current index of textureIndices
+                                  },
+                              };
+            this.animation = "idle"; //current animation name
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.collisionAction = () => {};
+        }
+        draw(dt){ // delta time from previous render
+            const gl = this.gl;
+            gl.useProgram(this.program);
+            gl.uniform2f(this.program.textureOffsetLocation, ...this.textureOffset);
+            gl.uniform3f(this.program.positionOffsetLocation, 
+                         this.x+this.positionOffset[0],
+                         this.y+this.positionOffset[1],
+                         this.z+this.positionOffset[2]);
+            let animation = this.animations[this.animation];
+            this.textureIndex =  animation.textureIndices[animation.indexPointer];
+            gl.bindTexture(gl.TEXTURE_2D, this.textures[this.textureIndex]);
+            gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            animation.counter -= dt;
+            if(animation.counter < 0){
+                animation.counter = animation.timePerFrame;
+                animation.indexPointer ++ ;
+                animation.indexPointer %= animation.textureIndices.length;
+            }
+        }
+    };
+    
+    // Mixin
+    const Collider =  {
+    	halfWidth : 0,
+        x : 0,
+        y : 0, 
+        isColliding: function(x2, y2, halfWidth2){// other object's values
+            let x1 = this.x;
+            let y1 = this.y;
+            let halfWidth1 = this.halfWidth;
+            const horizontalOverlap = Math.abs(x1 - x2) < (halfWidth1 + halfWidth2);
+            const verticalOverlap = Math.abs(y1 - y2) < (halfWidth1 + halfWidth2);
+            return horizontalOverlap && verticalOverlap;
+        },
+        collisionAction : function(){} // to override;
+    };
+    
+    // Mixin
+    const Doomed = {
+    	lifetime : 2000,
+        expired : false,
+        expire: function(dt) {
+        	this.lifetime -= dt;
+            if(this.lifetime < 0){
+                this.expired = true;
+            }
+        }
+    }
+    
+    // Mixin
+    const Mover = {
+    	x : 0,
+        y : 0,
+    	dx : 0,
+        dy : 0,
+        move : function(dt) {
+            if(this.dead) return;
+            this.x += this.dx;
+            this.y += this.dy;
+            this.updateDxy();
+        },
+        updateDxy : function(dt, homingTarget = {x:0,y:0}) { // to override
+            //this.dx = ...;
+            //this.dy = ...;
+        },
+    };
+    
+    class Bullet extends Drawable{
+    	constructor(sz, gl, program, textures, vertices, x = 0, y = 0, z = 0){
+    	    super(gl, program, textures, vertices, x,y,z);
+             Object.assign(this, Mover);
+             Object.assign(this, Doomed);
+             Object.assign(this, Collider);
+             this.halfWidth = sz;
+             this.x = x;
+             this.y = y;
+             this.power = 1; //damage power
+             this.animations.spin = {
+                                      "timePerFrame": 100, // time between animation frames
+                                      "counter": 0,      // time counter for time left until next texture is displayed
+                                      "textureIndices": [0,1,2,3], // texture indices in order of appearance in the animation
+                                      "indexPointer": 0, // current index of textureIndices
+                              };
+        }
+        damage = function(enemy){
+            enemy.life -= this.power;
+            if(enemy.life<=0) enemy.dead = true;
+            if(enemy.dead) enemy.lifetime = 2000; 
+        }
+    }
+
+    class Fixture extends Drawable{
+    	constructor(sz, gl, program, textures, vertices, x = 0, y = 0, z = 0){
+    	    super(gl, program, textures, vertices, x,y,z);
+            Object.assign(this, Collider);
+            this.halfWidth = sz;
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    class Enemy extends Drawable{
+    	constructor(sz, gl, program, textures, vertices, x = 0, y = 0, z = 0){
+    	    super(gl, program, textures, vertices, x,y,z);
+            Object.assign(this, Mover);
+            Object.assign(this, Collider);
+            Object.assign(this, Doomed);
+            this.halfWidth = sz;
+            this.x = x;
+            this.y = y;
+            this.life = 10;
+            this.lifetime = Infinity;
+        }
+        dying = function(){} // override
+    }
+
+    class BloodParticle extends Drawable{
+    	constructor(gl, program, textures, x, y, dx, dz){
+            const sz = 0.004;
+            const vertices = new Float32Array([
+                 -sz,sz, 0.0, 0.0, 1.0,
+                 -sz, -sz, 0.0, 0.0, 0.0,
+                 sz, sz, 0.0, 1.0, 1.0,
+                -sz, -sz, 0.0, 0.0, 0.0,
+                 sz,  sz, 0.0, 1.0, 1.0,
+                 sz, -sz, 0.0, 1.0, 0.0,
+            ]);
+    	    super(gl, program, textures, vertices, x, y);
+            Object.assign(this, Mover);
+            Object.assign(this, Doomed);
+            this.x = x;
+            this.y = y;
+            this.dx = (Math.random()-0.5) / 400;
+            this.dy = (Math.random()-0.5) / 400;
+            this.lifetime = 1000;
+        }
+    }
+
+    try{
+        const dialogBox = document.getElementById('dialogBox');
+        function dialog(text, callback = ()=>{}){
+            dialogBox.innerText = text;
+            setTimeout(() => { 
+                           dialogBox.innerText=""; 
+                           callback();
+                       },
+                       3000);
+        }
+
+        const canvas = document.getElementById('webglCanvas');
+        const gl = canvas.getContext('webgl');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        if (!gl) {
+            console.error("WebGL not supported");
+            throw "No WebGL context";
+        }
+
+        // Loading Texture Images
+        const textureURLs = [
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Sierpinski_carpet_6.svg/1024px-Sierpinski_carpet_6.svg.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedro.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedro2.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/brick.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chest.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chest2.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chest3.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal1.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal2.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal3.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal4.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal5.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_up.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_right.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_down.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_left.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chestopen.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/dea.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/dea2.png',
+            'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/bloodparticle.png',
+        ];
+
+        const textureImages = [];
+        let loadedTextures = 0;
+
+        function loadImage(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = '*';
+                img.src = url;
+                img.onload = () => resolve(img);
+                img.onerror = (error) => reject(error);
+            });
+         }
+
+        // Load all textures and store them in textureImages array in order
+        const loadTextures = textureURLs.map((url, index) => {
+            return loadImage(url).then((img) => {
+                textureImages[index] = img; // Ensure image is placed in the correct order
+                loadedTextures++;
+                if (loadedTextures === textureURLs.length) {
+                    console.info('All images loaded successfully');
+                    initWebGL(); // Proceed with WebGL initialization
+                }
+            }).catch((error) => {
+                console.error('Failed to load image:', url, error);
+            });
+        });
+        
+
+        function initWebGL() {
+            // Vertex shader program
+            const vertexShaderSource = `
+                attribute vec3 a_position;
+                attribute vec2 a_texCoord;
+                varying vec2 v_texCoord;
+                uniform vec3 u_positionOffset;
+                uniform vec2 u_textureOffset;
+                uniform float u_aspectRatio;
+
+                const float far = 100.0; //farthest distance visible to camera
+                const float near = 0.1; //closest distance visible to camera
+                const float fov = radians(25.0); //vertical y axis field of view of the camera
+                const float f = 1.0 / tan(fov/2.0);                
+
+                //projection and camera matrices
+                mat4 projection = mat4(f/u_aspectRatio, 0.0, 0.0, 0.0, 
+                                       0.0, f, 0.0, 0.0,
+                                       0.0, 0.0, (near + far)/(near-far), 1.0,
+                                       0.0, 0.0, (near * far * 2.0)/(near-far), 1.0);
+
+                mat4 camera = mat4(1.0, 0.0, 0.0, 0.0, 
+                                   0.0, 1.0, 0.0, 0.0,
+                                   0.0, 0.0, 1.0, 0.0,
+                                   0.0, 0.0, 1.0, 1.0);
+
+                void main() {
+                    gl_Position = projection * camera * vec4(
+                            a_position.x + u_positionOffset.x,
+                            a_position.y - u_positionOffset.y,
+                            a_position.z + u_positionOffset.z, 1.0);
+                    v_texCoord = vec2(a_texCoord.x, 1.0 - a_texCoord.y) - u_textureOffset;
+                }
+            `;
+
+            // Fragment shader program
+            const fragmentShaderSource = `
+                precision mediump float;
+                varying vec2 v_texCoord;
+                uniform sampler2D u_texture;
+                void main() {
+                    gl_FragColor = texture2D(u_texture, v_texCoord) ;
+                }
+            `;
+
+            // Shader compilation and linking utility functions
+            function compileShader(source, type) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error("ERROR compiling shader: " + gl.getShaderInfoLog(shader));
+                }
+                return shader;
+            }
+
+            function createProgram(vertexShader, fragmentShader) {
+                const program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+                if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                    console.error("ERROR linking program: " + gl.getProgramInfoLog(program));
+                }
+                return program;
+            }
+
+            // Create shaders and program
+            const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+            const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+            const program = createProgram(vertexShader, fragmentShader);
+            // Get locations of the attributes and uniforms
+            program.positionLocation = gl.getAttribLocation(program, "a_position");
+            program.texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+            program.textureOffsetLocation = gl.getUniformLocation(program, "u_textureOffset");
+            program.positionOffsetLocation = gl.getUniformLocation(program, "u_positionOffset");
+            program.textureLocation = gl.getUniformLocation(program, "u_texture");
+            program.aspectRatioLocation = gl.getUniformLocation(program, "u_aspectRatio");
+
+            // Create buffer and load data
+            program.positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
+            gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
+            gl.enableVertexAttribArray(program.positionLocation);
+            gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+            gl.enableVertexAttribArray(program.texCoordLocation);
+
+            // Create the textures
+            let textures = textureImages.map((img) => {
+                let texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+                gl.generateMipmap(gl.TEXTURE_2D);
+                // Set texture wrapping and filtering
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                return texture;
+            });
+
+            // Variables for world offset and control keys
+            let worldOffsetX = 0;
+            let worldOffsetY = 0;
+            let keys = {};
+
+            // Event Handlers
+            window.addEventListener('keyup', (event) => {
+                event.preventDefault();
+                keys[event.key] = false;
+            });
+             
+            window.addEventListener('keydown', (event) => {
+                event.preventDefault();
+                keys[event.key] = true;
+            });
+            
+            canvas.addEventListener('touchstart', (event) => { event.preventDefault(); document.querySelector("#buttons").style.visibility="visible";});
+            
+            document.querySelector("#left").addEventListener("touchstart", (e)=>{e.preventDefault();keys["ArrowLeft"]=true;});
+            
+            document.querySelector("#left").addEventListener("touchend", (e)=>{e.preventDefault();keys["ArrowLeft"]=false;});
+            
+            document.querySelector("#right").addEventListener("touchstart", (e)=>{e.preventDefault();keys["ArrowRight"]=true;});
+            
+            document.querySelector("#right").addEventListener("touchend", (e)=>{e.preventDefault();keys["ArrowRight"]=false;});
+            
+            document.querySelector("#up").addEventListener("touchstart", (e)=>{e.preventDefault();keys["ArrowUp"]=true;});
+            
+            document.querySelector("#up").addEventListener("touchend", (e)=>{e.preventDefault();keys["ArrowUp"]=false;});
+            
+            document.querySelector("#down").addEventListener("touchstart", (e)=>{e.preventDefault();keys["ArrowDown"]=true;});
+            
+            document.querySelector("#down").addEventListener("touchend", (e)=>{e.preventDefault();keys["ArrowDown"]=false;});
+
+            document.querySelector("#attack").addEventListener("touchstart", (e)=>{e.preventDefault();keys[" "]=true;});
+            
+            document.querySelector("#attack").addEventListener("touchend", (e)=>{e.preventDefault();keys[" "]=false;});
+
+            window.addEventListener('resize', (event) => {
+                event.preventDefault();
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            });
+
+            // WebGL Rendering Settings
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.GEQUAL);           
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set background color
+            gl.clearDepth(0.0);
+
+            // Dialog
+            dialog(
+                "USE ARROW KEYS TO MOVE AROUND",
+                ()=>{
+                    dialog(
+                        "SPACE BAR FOR ATTACK"
+                    )
+                }
+            );
+
+            // Drawables
+            // Define the square vertices for the "map object" (coordinates for texture mapping)
+            const backgroundVertices = new Float32Array([
+                -1,  1, 0.0, 0.0, 1.0,
+                -1, -1, 0.0, 0.0, 0.0,
+                 1,  1, 0.0, 1.0, 1.0,
+                -1, -1, 0.0, 0.0, 0.0,
+                 1,  1, 0.0, 1.0, 1.0,
+                 1, -1, 0.0, 1.0, 0.0,
+            ]);
+
+            // Define the square vertices for the "protagonist object" (coordinates for texture mapping)
+            const sz = 0.03125;
+            const tileVertices = new Float32Array([
+                -sz,  sz, 0.0, 0.0, 1.0,
+                -sz, -sz, 0.0, 0.0, 0.0,
+                 sz,  sz, 0.0, 1.0, 1.0,
+                -sz, -sz, 0.0, 0.0, 0.0,
+                 sz,  sz, 0.0, 1.0, 1.0,
+                 sz, -sz, 0.0, 1.0, 0.0,
+            ]);
+            
+            let protagonist = new Drawable(gl, program, [textures[1], textures[2]], tileVertices);
+            protagonist.animations.walking = {
+                                                 "timePerFrame": 200,
+                                                 "counter": 0,
+                                                 "textureIndices": [0,1],
+                                                 "indexPointer": 0,
+                                             };
+            protagonist.animations.attack  = {
+                                                 "timePerFrame": 0,
+                                                 "counter": 0,
+                                                 "textureIndices": [0],
+                                                 "indexPointer": 0,
+                                             };
+             protagonist.weapon = null;
+             protagonist.ammoType= null;
+             protagonist.speed = 1;
+             protagonist.dx = 0;
+             protagonist.dy = 0;
+             let bullets = [] ;
+             protagonist.attack=(dx,dy)=>{
+                if(!protagonist.weapon) return;
+                if(!protagonist.ammoType) return;
+                bullet = new Bullet(sz,gl,program,[textures[13],textures[14],textures[15],textures[16]], tileVertices, 0.0, 0.0, 0.0);
+                bullet.dx = dx;
+                bullet.dy = dy;
+                bullet.x = -worldOffsetX;
+                bullet.y = -worldOffsetY;
+                bullet.lifetime = 2000;
+                bullet.collisionAction = ()=>{}
+                bullet.animation = "spin";
+                bullets.push(bullet);
+            }
+                                             
+            let background = new Drawable(gl, program, [textures[0]], backgroundVertices);
+            let die = () => {
+                protagonist.dead = true;
+                audio.pause();
+                audio = document.querySelector("#ether");
+                audio.play();
+            }
+            
+            function Level1() {
+                bullets = [];
+                let brick = new Fixture(sz, gl, program, [textures[3]], tileVertices, 0.0, 0.2, 0.0);
+                let chest = new Fixture(sz, gl, program, [textures[4],textures[17]], tileVertices, -0.2, -0.0, 0.0);
+                chest.collisionAction = () => {chest.animations.idle.textureIndices=[1];chest.collisionAction=()=>{};protagonist.weapon="gun";dialog("YOU FOUND A TRANQUILIZER GUN");};
+                let chest2 = new Fixture(sz, gl, program, [textures[5],textures[17]], tileVertices, 0.0, -0.2, 0.0);
+                chest2.collisionAction = () => {protagonist.ammoType="fentanyl";chest2.animations.idle.textureIndices=[1];chest2.collisionAction=()=>{};dialog("YOU FOUND FENTANYL TRANQUILIZER SHOTS");};
+                let chest3 = new Fixture(sz, gl, program, [textures[6],textures[17]], tileVertices, 0.2, -0.0, 0.0);
+                chest3.collisionAction = () => {chest3.animations.idle.textureIndices=[1];chest3.collisionAction = ()=>{};dialog("YOU FOUND A LETTER FROM CHICKA MI AMOR:", () => {dialog('"HELP ME PEDRO!"<Selena Gomez>');});};
+                let portal = new Fixture(sz, gl, program, [textures[7], textures[8], textures[9], textures[10], textures[11], textures[12]], tileVertices, 0.0, 0.2+sz*2, 0.0);
+                portal.collisionAction = () => {dialog("YOU FOUND THE EXIT", ()=>{level = new Level2();}); portal.collisionAction = () => {};};
+                portal.animations.idle = {
+                                         "timePerFrame": 20,
+                                         "counter": 0,
+                                         "textureIndices": [0,1,2,3,4,5],
+                                         "indexPointer": 0,
+                                     };
+                this.drawables = [chest, chest2, chest3, brick, portal];
+                this.colliders = [chest, chest2, chest3, brick, portal];
+                this.movers = [];
+                this.enemies = [];
+            };
+            
+            function Level2(){
+                bullets = [];
+            	worldOffsetX = 0;
+                worldOffsetY = 0;
+                let bricks = (()=>{
+                    let result = [];
+                    for(let x = -15, y=2; x < -8; x+=2, y+=2){
+                        result.push(new Fixture(sz,gl,program,[textures[3]],tileVertices,x*sz,-0.2-sz*y,0 ));
+                        result.push(new Fixture(sz,gl,program,[textures[3]],tileVertices,x*sz,-0.2+sz*y,0 ));
+                    }
+                    for(let x = -sz * 16; x < sz * 16; x+=sz*2)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,x,-0.2,0.0));
+                    return result;
+                })();
+                let bullet = new Bullet(sz, gl, program, [textures[13],textures[14],textures[15],textures[16]], tileVertices, 0.0, 0.2, 0.0);
+                bullet.dx = 0;
+                bullet.dy = -0.003;
+                bullet.lifetime = 2000;
+                bullet.collisionAction = ()=>{
+                        die();
+                	dialog("YOU STEPPED ON DIRTY NEEDLE", ()=>{
+                	    dialog("NOW YOU ARE HIV POSITIVE AND GAY!");
+                    });
+                    bullet.dy = 0;
+                    bullet.dx = 0;
+                }
+                let chest = new Fixture(sz, gl, program, [textures[4],textures[17]], tileVertices, 2.0, -0.2, 0.0);
+                chest.collisionAction = () => {chest.animations.idle.textureIndices=[1];dialog("YOU FOUND THE COCAINA (SPEED BUFF)"); protagonist.speed = 2.0;};
+                let portal = new Fixture(sz, gl, program, [textures[7], textures[8], textures[9], textures[10], textures[11], textures[12]], tileVertices, -2.0, -0.2, 0.0);
+                portal.collisionAction = () => {dialog("YOU FOUND THE EXIT", ()=>{level = new Level3();}); portal.collisionAction = () => {};};
+                portal.animations.idle = {
+                                         "timePerFrame": 20,
+                                         "counter": 0,
+                                         "textureIndices": [0,1,2,3,4,5],
+                                         "indexPointer": 0,
+                                     };
+
+            	this.colliders = [...bricks, bullet, chest, portal];
+                this.drawables = [bullet, ...bricks, chest, portal];
+                this.movers = [bullet];
+                this.enemies = [];
+            }
+            
+            function Level3(){
+                bullets = [];
+            	worldOffsetX = 0;
+                worldOffsetY = 0;
+
+                let bricks = (()=>{
+                    let result = [];
+                    for(let y = -0.4; y <= 0.4; y += sz*2)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,-sz*16,y,0.0));
+                    for(let y = -0.4; y <= 0.4; y += sz*2)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,sz*16,y,0.0));
+                    for(let x = -sz * 16; x < sz * 16; x+=sz*2)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,x,-0.4,0.0));
+                    for(let x = -sz * 16; x <= sz * 16; x+=sz*2)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,x,0.4,0.0));
+                    return result;
+                })();
+
+                let dea = new Enemy(sz, gl, program, [textures[18], textures[19]], tileVertices, 0.2, -0.2, 0.0);
+                dea.collisionAction = ()=>{die();dialog("YOU WERE CAUGHT BY THE D.E.A.");};
+                dea.animations.walking = {
+                                                 "timePerFrame": 200,
+                                                 "counter": 0,
+                                                 "textureIndices": [0,1],
+                                                 "indexPointer": 0,
+                                             };
+                dea.animation = 'walking';
+                dea.dx = 0;
+                dea.dy = 0;
+                dea.updateDxy = (dt) => {
+                    dea.dy = 0;
+                    if(dea.x >= 0.2) dea.dx = -0.0003*dt;
+                    if(dea.x <= -0.2) dea.dx = 0.0003*dt;
+                };
+                let portal = new Fixture(sz, gl, program, [textures[7], textures[8], textures[9], textures[10], textures[11], textures[12]], tileVertices, 0.0, 0.2, 0.0);
+                portal.collisionAction = () => {dialog("YOU FOUND THE EXIT", ()=>{level = new Level4();}); portal.collisionAction = () => {};};
+                portal.animations.idle = {
+                                         "timePerFrame": 20,
+                                         "counter": 0,
+                                         "textureIndices": [0,1,2,3,4,5],
+                                         "indexPointer": 0,
+                                     };
+            	this.colliders = [...bricks, dea];
+                this.enemies = [dea];
+                this.drawables = [...bricks, dea];
+                this.movers = [dea];
+                dea.dying = () => {dialog("CONGRATS. YOUR FIRST KILL! CARTEL PRESTIGE GOES UP");this.colliders.push(portal);this.drawables.push(portal);};
+            }
+
+            function Level4(){
+                bullets = [];
+            	worldOffsetX = 0;
+                worldOffsetY = 0;
+
+
+                let portal = new Fixture(sz, gl, program, [textures[7], textures[8], textures[9], textures[10], textures[11], textures[12]], tileVertices, 0.0, 0.2, 0.0);
+                portal.collisionAction = () => {dialog("YOU FOUND THE EXIT", ()=>{level = new Level5();}); portal.collisionAction = () => {};};
+                portal.animations.idle = {
+                                         "timePerFrame": 20,
+                                         "counter": 0,
+                                         "textureIndices": [0,1,2,3,4,5],
+                                         "indexPointer": 0,
+                                     };
+
+
+                let enemies = [];
+                let enemyCount = 10;
+                for(let i = 1; i<=enemyCount; i++){
+                  let radius = 0.2 * i + 0.5;
+                  let angle = Math.PI / 3 * i;
+                  let x = Math.cos(angle) * radius;
+                  let y = Math.sin(angle) * radius;
+                  let dea = new Enemy(sz, gl, program, [textures[18], textures[19]], tileVertices, x, y, 0.0);
+                  dea.collisionAction = ()=>{die();dialog("YOU WERE CAUGHT BY THE D.E.A.");};
+                  dea.animations.walking = {
+                                                 "timePerFrame": 200,
+                                                 "counter": 0,
+                                                 "textureIndices": [0,1],
+                                                 "indexPointer": 0,
+                                             };
+                  dea.animation = 'walking';
+                  dea.dx = 0;
+                  dea.dy = 0;
+                  dea.updateDxy = function(dt, homingTarget) {
+                      if(!dt) return;
+                      let dy = -dea.y + homingTarget.y;
+                      let dx = -dea.x + homingTarget.x;
+                      let angle = Math.atan2(dy,dx);
+                      dea.dx = 0.0001 * dt * Math.cos(angle);
+                      dea.dy = 0.0001 * dt * Math.sin(angle);
+                  };
+                  dea.dying = () => {dialog(`${--enemyCount} enemies 
+                  left`);if(enemyCount === 0) 
+                  {this.drawables.push(portal); 
+                  this.colliders.push(portal);}}; enemies.push(dea);
+                }
+
+            	this.colliders = [...enemies];
+                this.enemies = [...enemies];
+                this.drawables = [...enemies];
+                this.movers = [...enemies];
+            }
+
+            function Level5(){
+                bullets = [];
+            	worldOffsetX = -sz*0;
+                worldOffsetY = -sz*0;
+
+                let bricks = (()=>{
+                    let result = [];
+                    for(let y = -18; y <= 18; y += 12)
+                    for(let x = -18; x <= 18; x += 2)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,sz*x,sz*y,0.0));
+                    for(let y = -18; y <= 18; y += 2)
+                    for(let x = -18; x <= 18; x += 12)
+                        result.push(new Fixture(sz, gl,program,[textures[3]],tileVertices,sz*x,sz*y,0.0));
+                    return result;
+                })();
+
+                let portals = (()=>{
+                    let results = [];
+                    for(let y = -18; y < 18; y += 12)
+                    for(let x = -18; x < 18; x += 12)
+                    {
+                        let portal = new Fixture(sz, gl, program, [textures[7], textures[8], textures[9], textures[10], textures[11], textures[12]], tileVertices, (x+2)*sz, (y+2)*sz, 0.0);
+                        portal.animations.idle = {
+                                         "timePerFrame": 20,
+                                         "counter": 0,
+                                         "textureIndices": [0,1,2,3,4,5],
+                                         "indexPointer": 0,
+                                     };
+                        results.push(portal);
+                    }
+                    for(let y = -18; y < 18; y += 12)
+                    for(let x = -18; x < 18; x += 12)
+                    {
+                        let portal = new Fixture(sz, gl, program, [textures[7], textures[8], textures[9], textures[10], textures[11], textures[12]], tileVertices, (x+10)*sz, (y+10)*sz, 0.0);
+                        portal.animations.idle = {
+                                         "timePerFrame": 20,
+                                         "counter": 0,
+                                         "textureIndices": [0,1,2,3,4,5],
+                                         "indexPointer": 0,
+                                     };
+                        results.push(portal);
+                    }
+                    return results;
+                })();
+
+                for(let i=0;i<9;i++)
+                portals[i].collisionAction = ()=>{worldOffsetX=-(portals[i+1].x+sz*4);worldOffsetY=-(portals[i+1]).y-sz*4;};
+                for(let i=9;i<18;i++)
+                portals[i].collisionAction = ()=>{worldOffsetX=-(portals[i-1].x-sz*4);worldOffsetY=-(portals[i-1]).y+sz*4;};
+
+                let ports = portals.toSpliced(9, 1);
+                ports[8].collisionAction = () => {worldOffsetX=-0;worldOffsetY=0;};
+                ports[ports.length-1].collisionAction = () => {dialog("YOU FOUND THE EXIT", ()=>{level = new Level6();}); ports[8].collisionAction = () => {};};
+
+                let chest = new Fixture(sz, gl, program, [textures[4],textures[17]], tileVertices, -sz*8, -sz*8, 0.0);
+                chest.collisionAction = () => {chest.animations.idle.textureIndices=[1];dialog("YOU FOUND THE SHROOMS (STRENGTH BUFF)");};
+
+            	this.colliders = [...bricks, ...ports, chest];
+                this.enemies = [];
+                this.drawables = [...bricks, ...ports, chest];
+                this.movers = [];
+            }
+
+            function Level6(){
+                bullets = [];
+            	worldOffsetX = -sz*0;
+                worldOffsetY = -sz*0;
+            	this.colliders = [];
+                this.enemies = [];
+                this.drawables = [];
+                this.movers = [];
+            }
+
+            //protagonist.weapon = "jfkdlsjf"; //remove when not debug
+            //protagonist.ammoType = "djfkslfjkdsl"; //remove
+            let level = new Level1();
+            
+            // TIME
+            let previousTime = 0;
+
+            // Render function to draw the map with texture
+            function render(time) {
+                // Delta Time since last rendering
+                let dt = time - previousTime;
+                previousTime = time;
+
+                // RESET SCREEN
+                // Set the aspect ratio uniform
+                gl.useProgram(program);
+                gl.uniform1f(program.aspectRatioLocation, canvas.width/canvas.height);
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                // BACKGROUND DRAW
+                background.textureOffset = [worldOffsetX/3, worldOffsetY/3];
+                background.draw(dt);
+
+                // PROTAGONIST DRAW
+                // Choosing the texture for the protagonist depending on action
+                let protagonistWalking = false;
+                if(keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"])
+                  protagonistWalking = true;
+                protagonist.animation = keys[" "]? "attack" : protagonistWalking? "walking" : "idle";
+                protagonist.draw(dt);
+
+                // TILES DRAW
+                level.drawables.forEach(d=>{
+                	d.positionOffset = [worldOffsetX, worldOffsetY, 0.0];
+                    d.draw(dt);
+                });
+
+                // DRAW PROTAGONIST BULLETS
+                bullets.forEach(b=>{
+                    b.positionOffset = [worldOffsetX, worldOffsetY, 0.0];
+                    b.draw(dt);
+                    b.move(dt);
+                });                
+
+                // CHECK COLLISION BETWEEN ENEMIES AND BULLETS
+                level.enemies.forEach((e) => {
+                    if(e.dead) return;
+                    bullets.forEach((b) => {
+                      if(e.isColliding(b.x,b.y,sz)){
+                        let blood = new BloodParticle(gl, program, [textures[20]], e.x, e.y);
+                        level.drawables.push(blood);
+                        level.movers.push(blood);
+                        b.damage(e);
+                        if(e.dead) e.dying();
+                      }
+                    });
+                });
+
+                // MOVERS
+                level.movers.forEach(m=>{
+                    m.move(dt);
+                    m.updateDxy(dt, {x:-worldOffsetX, y:-worldOffsetY});
+                });
+
+                // DOOMERS LIFETIMES CLEANING
+                level.drawables.forEach(d=>{if(d.lifetime !== undefined ) d.expire(dt);});
+                bullets.forEach(b=>{if(b.lifetime !== undefined) b.expire(dt);});
+                bullets = bullets.filter(b=>{return b.lifetime === undefined || !(b.expired);});
+                level.movers = level.movers.filter(m => {return m.lifetime === undefined || !(m.expired);});
+                level.drawables = level.drawables.filter(m => {return m.lifetime === undefined || !(m.expired);});
+                level.colliders = level.colliders.filter(m => {return m.lifetime === undefined || !(m.expired);});
+                level.enemies = level.enemies.filter(m => {return m.lifetime === undefined || !(m.expired);});
+
+                // CONTROLS
+                const d = 0.0003 * protagonist.speed * dt; //delta or offset change
+
+                const oldOffsetX = worldOffsetX;
+                const oldOffsetY = worldOffsetY;
+
+                if(keys["ArrowLeft"]){ worldOffsetX += d; }
+                if(keys["ArrowRight"]){ worldOffsetX -= d; }
+                if(keys["ArrowUp"]){ worldOffsetY += d; }
+                if(keys["ArrowDown"]){ worldOffsetY -= d; }
+                
+                // SAVE THE DIRECTION THAT PROTAGONIST IS HEADING TO (FOR SPAWNING BULLET DIRECTION LATER)
+                if(protagonistWalking){
+	            protagonist.dx = -worldOffsetX + oldOffsetX; 
+	            protagonist.dy = -worldOffsetY + oldOffsetY;
+                }
+     
+                // REVERSE PROTAGONIST MOVEMENTS IF HITS AN OBJECT
+                level.colliders.forEach((c) => {
+                    if(c.isColliding(-worldOffsetX, -worldOffsetY, sz)){
+                        worldOffsetX = oldOffsetX;
+                        worldOffsetY = oldOffsetY;
+                        c.collisionAction();
+                    }
+                });
+
+                // SPAWN PROTAGONIST BULLETS
+                if(keys[" "]){keys[" "]=false; protagonist.attack(protagonist.dx, protagonist.dy);}
+
+                // LOOP
+                if(!protagonist.dead)
+                requestAnimationFrame(render);
+            }
+
+            // Start the rendering loop
+            render(0);
+        }
+    }catch(e){
+        console.error("PROGRAM EXIT : ", e);
+    }
+    </script>
+</body>
+</html>
