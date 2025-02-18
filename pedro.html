@@ -51,11 +51,11 @@
     <button id="down" style="left: 1em; bottom: 3em;">&nbsp;</button>
     <button id="attack" style="right: 1em; bottom: 4em;"></button>
     </div> 
-    <audio id="hardgroove" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedrohard.mp3" type="audio/mp3" preload="auto" loop>
+    <audio id="hardgroove" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedrohard.mp3" type="audio/mp3" preload="auto" loop>
     </audio > 
-    <audio id="fmtechno" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/fmtechno.mp3" type="audio/mp3" preload="auto" loop>
+    <audio id="fmtechno" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/fmtechno.mp3" type="audio/mp3" preload="auto" loop>
     </audio > 
-    <audio id="ether" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedroEther.mp3" type="audio/mp3" preload="auto" loop>
+    <audio id="ether" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedroEther.mp3" type="audio/mp3" preload="auto" loop>
     </audio > 
     <button id="music" onClick="audio.paused?audio.play():audio.pause();">🎵</button>
     <button id="zoomIn" onClick="zoomFactor-=0.25;">&plus;</button>
@@ -100,29 +100,29 @@
 
     const textureURLs = [
         'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Sierpinski_carpet_6.svg/1024px-Sierpinski_carpet_6.svg.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedro.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/pedro2.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/brick.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chest.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chest2.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chest3.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal1.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal2.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal3.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal4.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/portal5.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_up.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_right.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_down.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/syringe_left.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/chestopen.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/dea.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/dea2.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/bloodparticle.png',
-        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/transparent.png',
-         'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/npc.png',
-          'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/npc2.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedro.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedro2.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/brick.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/chest.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/chest2.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/chest3.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/portal.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/portal1.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/portal2.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/portal3.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/portal4.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/portal5.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/syringe_up.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/syringe_right.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/syringe_down.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/syringe_left.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/chestopen.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/dea.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/dea2.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/bloodparticle.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/transparent.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/npc.png',
+        'https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/npc2.png',
     ];
 
     // vertices for the background x,y,z,u,v
