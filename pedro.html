@@ -320,6 +320,19 @@
         }
     }
 
+    class BloodParticle extends Particle{
+    	constructor(x, y){
+    	    super([20, 21], x, y);
+            this.animations.blink  = {
+                 "timePerFrame": 20,
+                 "counter": 0,
+                 "textureIndices": [0,1],
+                 "indexPointer": 0,
+            };
+            this.animation = 'blink';
+        }
+    }
+
     class Brick extends Fixture{
     	constructor(x, y, z){
     	    super(sz, [3], tileVertices, x, y, z);
@@ -995,7 +1008,7 @@
                     if(e.dead) return;
                     bullets.forEach((b) => {
                       if(e.isColliding(b.x,b.y,sz)){
-                        let blood = new Particle([20], e.x, e.y);
+                        let blood = new BloodParticle(e.x, e.y);
                         level.drawables.push(blood);
                         level.movers.push(blood);
                         b.damage(e);
