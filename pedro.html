@@ -24,10 +24,14 @@
         	visibility: hidden;
         }
         button,#music, #zoomIn, #zoomOut {
+            padding: 0px 0px 0px 0px;
+            box-sizing:border-box;
             position: fixed;
             z-index:10;
             font-size: 3em;
             height: 1em;
+            line-height: 1em;
+            text-align: center;
             width: 1em;
             font-style: new courier, monospace;
             border-radius: 50%;
@@ -37,7 +41,7 @@
         }
         #music {left:0;top:0;}
         #zoomIn {left:0;top:1em;}
-        #zoomOut {left:1em;top:1em;}
+        #zoomOut {left:0em;top:2em;}
         canvas { top:0px;left:0px;display: block; border: 1px solid white;}
         audio {display: none;}
     </style>
@@ -80,6 +84,7 @@
     let worldOffsetX = 0;
     let worldOffsetY = 0;
     let keys = {};
+    let controlsEnabled = true;
 
     function dialog(text, callback = ()=>{}){
         const dialogBox = document.getElementById('dialogBox');
@@ -99,6 +104,7 @@
     }
 
     function initLevel(){
+        controlsEnabled = true;
         bullets = [];
         worldOffsetX = 0;
         worldOffsetY = 0;
@@ -331,7 +337,7 @@
     	constructor(x, y){
     	    super([20, 21], x, y);
             this.animations.blink  = {
-                 "timePerFrame": 20,
+                 "timePerFrame": 40,
                  "counter": 0,
                  "textureIndices": [0,1],
                  "indexPointer": 0,
@@ -645,9 +651,9 @@
 
             function Level1() {
                 Object.assign(this, initLevel());
-
-                background = new Drawable([0], backgroundVertices);
                 protagonist = new Protagonist();
+                background = new Drawable([0], backgroundVertices);
+
                 dialog("USE ARROW KEYS TO MOVE AROUND",
                        ()=>{dialog("SPACE BAR FOR ATTACK")});
 
@@ -672,6 +678,7 @@
                 let portal = new Portal(0.0, 0.2+sz*2, 0.0);
                 portal.collisionAction = () => {
                     protagonist.animation = "blink";
+                    controlsEnabled = false;
                     dialog("YOU FOUND THE EXIT",
                            ()=>{
                                protagonist.animation = "idle";
@@ -725,6 +732,7 @@
                 let portal = new Portal(-2.0, -0.2, 0.0);
                 portal.collisionAction = () => {
                     protagonist.animation = "blink";
+                    controlsEnabled = false;
                     dialog("YOU FOUND THE EXIT",
                            ()=>{
                                protagonist.animation = "idle";
@@ -766,6 +774,7 @@
                 let portal = new Portal(0.0, 0.2, 0.0);
                 portal.collisionAction = () => {
                     protagonist.animation = "blink";
+                    controlsEnabled = false;
                     dialog("YOU FOUND THE EXIT",
                            ()=>{
                                protagonist.animation = "idle";
@@ -791,6 +800,7 @@
                 let portal = new Portal(0.0, 0.2, 0.0);
                 portal.collisionAction = () => {
                     protagonist.animation = "blink";
+                    controlsEnabled = false;
                     dialog("YOU FOUND THE EXIT",
                            ()=>{
                                protagonist.animation = "idle";
@@ -871,7 +881,16 @@
 
                 let ports = portals.toSpliced(9, 1);
                 ports[8].collisionAction = () => {worldOffsetX=-0;worldOffsetY=0;};
-                ports[ports.length-1].collisionAction = () => {protagonist.animation="blink";dialog("YOU FOUND THE EXIT", ()=>{protagonist.animation="idle";level = new Level6();}); ports[8].collisionAction = () => {};};
+                ports[ports.length-1].collisionAction = () => {
+                    controlsEnabled = false;
+                    protagonist.animation="blink";
+                    dialog("YOU FOUND THE EXIT",
+                           ()=>{
+                               protagonist.animation="idle";
+                               level = new Level6();
+                    });
+                    ports[ports.length-1].collisionAction = () => {};
+                };
 
                 let chest = new Chest(-sz*8, -sz*8, 0.0);
                 chest.collisionAction = () => {
@@ -888,6 +907,10 @@
 
             function Level6(){
                 Object.assign(this, initLevel());
+
+                dialog(`"It is here that you die"`, () => {
+                    dialog(`"Selena Gomez is ours. Mouhahaha!"`);
+                });
 
                 let portal = new Portal(0.0, 0.2, 0.0);
                 portal.collisionAction = () => {
@@ -1021,6 +1044,7 @@
                 level.enemies = level.enemies.filter(m => {return m.lifetime === undefined || !(m.expired);});
 
                 // CONTROLS
+                if(controlsEnabled){
                 const d = 0.0003 * protagonist.speed * dt; //delta or offset change
 
                 const oldOffsetX = worldOffsetX;
@@ -1051,6 +1075,7 @@
                     keys[" "]=false;
                     protagonist.attack(protagonist.dx, protagonist.dy);
                 }
+                }//end if control enabled
 
                 // LOOP
                 if(!protagonist.dead)
