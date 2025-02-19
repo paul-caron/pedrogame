@@ -98,6 +98,13 @@
         audio.play();
     }
 
+    function initLevel(){
+        bullets = [];
+        worldOffsetX = 0;
+        worldOffsetY = 0;
+        return {colliders : [], enemies : [], drawables : [], movers : []}
+    }
+
     const assetsRoot = "https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/";
 
     const textureURLs = [
@@ -637,12 +644,13 @@
             gl.clearDepth(0.0);
 
             function Level1() {
+                Object.assign(this, initLevel());
+
                 background = new Drawable([0], backgroundVertices);
                 protagonist = new Protagonist();
                 dialog("USE ARROW KEYS TO MOVE AROUND",
                        ()=>{dialog("SPACE BAR FOR ATTACK")});
 
-                bullets = [];
                 let brick = new Brick(0.0, 0.2, 0.0);
                 let chest = new Chest(-0.2, -0.0, 0.0);
                 chest.collisionAction = () => {
@@ -681,9 +689,7 @@
             };
             
             function Level2(){
-                bullets = [];
-            	worldOffsetX = 0;
-                worldOffsetY = 0;
+                Object.assign(this, initLevel());
 
                 let bricks = (()=>{
                     let result = [];
@@ -735,9 +741,7 @@
             }
             
             function Level3(){
-                bullets = [];
-            	worldOffsetX = 0;
-                worldOffsetY = 0;
+                Object.assign(this, initLevel());
 
                 let bricks = (()=>{
                     let result = [];
@@ -782,10 +786,7 @@
             }
 
             function Level4(){
-                bullets = [];
-            	worldOffsetX = 0;
-                worldOffsetY = 0;
-
+                Object.assign(this, initLevel());
 
                 let portal = new Portal(0.0, 0.2, 0.0);
                 portal.collisionAction = () => {
@@ -833,9 +834,7 @@
             }
 
             function Level5(){
-                bullets = [];
-            	worldOffsetX = -sz*0;
-                worldOffsetY = -sz*0;
+                Object.assign(this, initLevel());
 
                 let bricks = (()=>{
                     let result = [];
@@ -888,10 +887,7 @@
             }
 
             function Level6(){
-                bullets = [];
-            	worldOffsetX = -sz*0;
-                worldOffsetY = -sz*0;
-
+                Object.assign(this, initLevel());
 
                 let portal = new Portal(0.0, 0.2, 0.0);
                 portal.collisionAction = () => {
@@ -943,21 +939,13 @@
             }
 
             function Level7(){
-                bullets = [];
-            	worldOffsetX = -sz*0;
-                worldOffsetY = -sz*0;
-
-
-            	this.colliders = [];
-                this.enemies = [];
-                this.drawables = [];
-                this.movers = [];
+                Object.assign(this, initLevel());
             }
 
             level = new Level1();
            // protagonist.weapon = "jfkdlsjf"; //remove when not debug
            // protagonist.ammoType = "djfkslfjkdsl"; //remove
-           // level = new Level6();//remove
+           // level = new Level1();//remove
             
             // TIME
             let previousTime = 0;
