@@ -256,7 +256,7 @@
             this.y += this.dy;
             this.updateDxy();
         },
-        updateDxy : function(dt, homingTarget = {x:0,y:0}) { // to override
+        updateDxy : function(dt) { // to override
             //this.dx = ...;
             //this.dy = ...;
         },
@@ -452,6 +452,9 @@
              bullet.collisionAction = ()=>{};
              bullet.animation = "spin";
              bullets.push(bullet);
+        }
+        getPosition(){
+          return {x: -worldOffsetX, y: -worldOffsetY};
         }
     }
     
@@ -820,8 +823,9 @@
                   let dea = new DEA(x, y, 0.0);
                   dea.dx = 0;
                   dea.dy = 0;
-                  dea.updateDxy = function(dt, homingTarget) {
+                  dea.updateDxy = function(dt) {
                       if(!dt) return;
+                      let homingTarget = protagonist.getPosition();
                       let dy = -dea.y + homingTarget.y;
                       let dx = -dea.x + homingTarget.x;
                       let angle = Math.atan2(dy,dx);
@@ -913,8 +917,9 @@
                     dialog(`"Selena Gomez is ours. Mouhahaha!"`);
                 });
 
-                let portal = new Portal(0.0, 0.2, 0.0);
+                let portal = new Portal(0.0, -32*sz, 0.0);
                 portal.collisionAction = () => {
+                    controlsEnabled = false;
                     protagonist.animation = "blink";
                     dialog("YOU FOUND THE EXIT",
                            ()=>{
@@ -935,13 +940,23 @@
                     return result;
                 })();
 
+                let otherBricks = (()=>{
+                    let result = [];
+                    for(let y = -36; y <= -18; y += 2)
+                    for(let x = -18; x <= 18; x += 36)
+                        result.push(new Brick(sz*x, sz*y, 0.0));
+                    for(let x = -18; x <= 18; x += 2)
+                        result.push(new Brick(sz*x, sz*-36, 0.0));
+                    return result;
+                })();
+
                 let dea = new DEA_Boss(0, -0.4, 0.0);
                 let animationCounter = 10000;
-                dea.updateDxy = function(dt, homingTarget){//dt, {x:,y:}
+                dea.updateDxy = function(dt){//dt, {x:,y:}
                     let target = {x:0,y:-0.4};
                     let speed = 0.5;
                     if(animationCounter<2000){
-                      target = homingTarget;
+                      target = protagonist.getPosition();
                       speed = 1.2;
                     }
                     if(!dt) return;
@@ -959,7 +974,14 @@
                 this.enemies = [dea];
                 this.drawables = [dea, ...bricks];
                 this.movers = [dea];
-                dea.dying = () => {this.drawables.push(portal);this.colliders.push(portal)};
+                dea.dying = () => {
+                    this.drawables.push(portal);
+                    this.colliders.push(portal);
+                    this.colliders = this.colliders.filter(c=>c.y!=-18*sz);
+                    this.drawables = this.drawables.filter(d=>d.y!=-18*sz);
+                    this.colliders.push(...otherBricks);
+                    this.drawables.push(...otherBricks);
+                };
             }
 
             function Level7(){
@@ -967,9 +989,9 @@
             }
 
             level = new Level1();
-           // protagonist.weapon = "jfkdlsjf"; //remove when not debug
-           // protagonist.ammoType = "djfkslfjkdsl"; //remove
-           // level = new Level1();//remove
+//            protagonist.weapon = "jfkdlsjf"; //remove when not debug
+//            protagonist.ammoType = "djfkslfjkdsl"; //remove
+//            level = new Level6();//remove
             
             // TIME
             let previousTime = 0;
@@ -988,7 +1010,7 @@
                 gl.viewport(0, 0, canvas.width, canvas.height);
                 if(level.transitionProgress<1.0) level.transitionProgress += 0.01;
                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-               gl.scissor((canvas.width*(1-level.transitionProgress))/2,(canvas.height*(1-level.transitionProgress))/2,canvas.width*level.transitionProgress, canvas.height*level.transitionProgress);
+                gl.scissor((canvas.width*(1-level.transitionProgress))/2,(canvas.height*(1-level.transitionProgress))/2,canvas.width*level.transitionProgress, canvas.height*level.transitionProgress);
 
                 // BACKGROUND DRAW
                 background.textureOffset = [worldOffsetX/3, worldOffsetY/3];
@@ -1034,7 +1056,7 @@
                 // MOVERS
                 level.movers.forEach(m=>{
                     m.move(dt);
-                    m.updateDxy(dt, {x:-worldOffsetX, y:-worldOffsetY});
+                    m.updateDxy(dt);
                 });
 
                 // DOOMERS LIFETIMES CLEANING
