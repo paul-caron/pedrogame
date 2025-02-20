@@ -85,6 +85,9 @@
     let worldOffsetY = 0;
     let keys = {};
     let controlsEnabled = true;
+    let collectables = {
+    //'item': number,
+    };
 
     function dialog(text, callback = ()=>{}){
         const dialogBox = document.getElementById('dialogBox');
@@ -138,6 +141,7 @@
         assetsRoot+'transparent.png',
         assetsRoot+'npc.png',
         assetsRoot+'npc2.png',
+        assetsRoot+'leaff.png',
     ];
 
     // vertices for the background x,y,z,u,v
@@ -345,6 +349,25 @@
             this.animation = 'blink';
         }
     }
+
+    class Leaf extends Drawable{
+        constructor(x, y){
+    	    super([24], tileVertices, x, y);
+            Object.assign(this, Collider);
+            Object.assign(this, Doomed);
+            this.halfWidth = sz;
+            this.x = x;
+            this.y = y;
+            this.lifetime = Infinity;
+            this.collisionAction = () => {
+                if(!collectables['leaf']) collectables['leaf'] = 1;
+                else collectables['leaf'] += 1;
+                dialog(`YOU FOUND A LEAF [${collectables['leaf']}]`);
+                this.lifetime = 0;
+                this.collisionAction = ()=>{};
+            };
+        }
+    };
 
     class Brick extends Fixture{
     	constructor(x, y, z){
@@ -987,14 +1010,15 @@
             function Level7(){
                 Object.assign(this, initLevel());
                 let npc = new NPC(0, -sz*6, 0, `"Help me find 100 plants. Follow the plants to some field up north"`);
-                this.drawables = [npc];
-                this.colliders = [npc];
+                let leaf = new Leaf(-sz*2, -sz*6);
+                this.drawables = [npc,leaf];
+                this.colliders = [npc,leaf];
             }
 
             level = new Level1();
 //            protagonist.weapon = "jfkdlsjf"; //remove when not debug
 //            protagonist.ammoType = "djfkslfjkdsl"; //remove
-//            level = new Level7();//remove
+            level = new Level7();//remove
             
             // TIME
             let previousTime = 0;
