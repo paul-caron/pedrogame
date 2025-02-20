@@ -1022,10 +1022,11 @@
                     portal.collisionAction = () => {};
                 };
 
-                let npc = new NPC(0, -sz*6, 0, `"Help me find 10 plants. There is some field straight up north"`);
+                const n = 100;
+                let npc = new NPC(0, -sz*6, 0, `"Help this poor old farmer. Please collect ${n} of these plants"`);
                 let oldCollisionAction = npc.collisionAction.bind(npc);
                 npc.collisionAction = () => {
-                    if(collectables['leaf']&&collectables['leaf']>=10){
+                    if(collectables['leaf']&&collectables['leaf']>=n){
                         dialog(`"Thank you very much. Here is the exit"`);
                         this.colliders.push(portal);
                         this.drawables.push(portal);
@@ -1033,18 +1034,19 @@
                         oldCollisionAction();
                     }
                 }
-                let leaf = new Leaf(-sz*2, -sz*6);
                 let leaves = (()=>{
                     let results = [];
-                    for(let i=0;i<15;i++){
-                        let x = (i-7)*sz*4;
-                        let y = Math.sin(x) - sz*100;
+                    for(let i=0;i<(n);i++){
+                        let angle = i * Math.PI * 2 / (n);
+                        let r = 1 + Math.sin(angle*13);
+                        let x = r * Math.cos(angle)*sz*16;
+                        let y = r * Math.sin(angle)*sz*16 - sz*30;
                         results.push(new Leaf(x,y));
                     }
                     return results;
                 })();
-                this.drawables = [npc,leaf,...leaves];
-                this.colliders = [npc,leaf,...leaves];
+                this.drawables = [npc,...leaves];
+                this.colliders = [npc,...leaves];
             }
 
             function Level8(){
@@ -1055,7 +1057,7 @@
             level = new Level1();
 //            protagonist.weapon = "jfkdlsjf"; //remove when not debug
 //            protagonist.ammoType = "djfkslfjkdsl"; //remove
-//            level = new Level7();//remove
+            level = new Level7();//remove
             
             // TIME
             let previousTime = 0;
