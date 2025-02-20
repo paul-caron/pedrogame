@@ -1022,10 +1022,10 @@
                     portal.collisionAction = () => {};
                 };
 
-                let npc = new NPC(0, -sz*6, 0, `"Help me find 100 plants. There is some field straight up north"`);
+                let npc = new NPC(0, -sz*6, 0, `"Help me find 10 plants. There is some field straight up north"`);
                 let oldCollisionAction = npc.collisionAction.bind(npc);
                 npc.collisionAction = () => {
-                    if(collectables['leaf']&&collectables['leaf']>100){
+                    if(collectables['leaf']&&collectables['leaf']>=10){
                         dialog(`"Thank you very much. Here is the exit"`);
                         this.colliders.push(portal);
                         this.drawables.push(portal);
@@ -1036,9 +1036,9 @@
                 let leaf = new Leaf(-sz*2, -sz*6);
                 let leaves = (()=>{
                     let results = [];
-                    for(let i=0;i<150;i++){
-                        let x = (i-75)*sz*4;
-                        let y = Math.sin(x) - sz*250;
+                    for(let i=0;i<15;i++){
+                        let x = (i-7)*sz*4;
+                        let y = Math.sin(x) - sz*100;
                         results.push(new Leaf(x,y));
                     }
                     return results;
