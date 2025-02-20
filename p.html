@@ -986,12 +986,15 @@
 
             function Level7(){
                 Object.assign(this, initLevel());
+                let npc = new NPC(0, -sz*6, 0, `"Help me find 100 plants. Follow the plants to some field up north"`);
+                this.drawables = [npc];
+                this.colliders = [npc];
             }
 
             level = new Level1();
 //            protagonist.weapon = "jfkdlsjf"; //remove when not debug
 //            protagonist.ammoType = "djfkslfjkdsl"; //remove
-//            level = new Level6();//remove
+//            level = new Level7();//remove
             
             // TIME
             let previousTime = 0;
