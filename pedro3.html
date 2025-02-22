@@ -97,6 +97,9 @@
     <audio id="ether" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedroEther.mp3" type="audio/mp3"
         preload="auto" loop>
     </audio>
+    <audio id="dorienigm" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/dorienigm.mp3" type="audio/mp3"
+        preload="auto" loop>
+    </audio>
     <button id="music" onClick="audio.paused?audio.play():audio.pause();">🎵</button>
     <button id="zoomIn" onClick="zoomFactor-=0.25;">&plus;</button>
     <button id="zoomOut" onClick="zoomFactor+=0.25;">&minus;</button>
@@ -109,8 +112,8 @@
         let protagonist;
         let background;
         let bullets;
-        let audios = ["#fmtechno", "#hardgroove"];
-        let audioIndex = 0;
+        let audios = ["#fmtechno", "#hardgroove", "#dorienigm"];
+        let audioIndex = 2;
         let audio = document.querySelector(audios[audioIndex]);
         let gl;
         let program;
