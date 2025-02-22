@@ -180,6 +180,7 @@
             assetsRoot + 'leaff.png',
             assetsRoot + 'ice.png',
             assetsRoot + 'ice2.png',
+            assetsRoot + 'bubble.png',
         ];
 
         // vertices for the background x,y,z,u,v
@@ -325,6 +326,12 @@
                 enemy.life -= this.power;
                 if (enemy.life <= 0) enemy.dead = true;
                 if (enemy.dead) enemy.lifetime = 2000;
+            }
+        }
+
+        class Bubble extends Bullet {
+            constructor(x, y, z) {
+                super(sz, [27], tileVertices, x, y, z);
             }
         }
 
@@ -476,7 +483,7 @@
                 super(sz, [25, 26], tileVertices, x, y, z);
                 this.collisionAction = () => {
                     die();
-                    dialog("YOU WERE CAUGHT BY THE I.C.E.");
+                    dialog("YOU WERE CAUGHT BY I.C.E.");
                 };
                 this.animations.walking = {
                     "timePerFrame": 200,
@@ -920,10 +927,44 @@
 
         function Level8() {
             Object.assign(this, initLevel());
-            let ice = new ICE(0, -0.5, 0);
-            this.colliders = [ice];
-            this.enemies = [ice];
-            this.drawables = [ice];
+            let ices = (()=>{
+                let results = [];
+                let n = 5;
+                let da = Math.PI * 2 / n;
+                for(let i = 0; i < n; ++i){
+                    let ice = new ICE(Math.cos(da*i)*0.7, Math.sin(da*i)*0.7, 0);
+                    ice.reloadTime = 2000;
+                    ice.move = (dt) => {
+                        ice.reloadTime -= dt;
+                        if(ice.reloadTime < 0){
+                            ice.reloadTime = 2000;
+                            if(!ice.dead){
+                                let bubble = new Bubble(ice.x, ice.y, 0);
+                                let {x,y} = protagonist.getPosition();
+                                let angle = Math.atan2(y-ice.y,x-ice.x);
+                                bubble.dx = Math.cos(angle) * dt * 0.0003;
+                                bubble.dy = Math.sin(angle) * dt * 0.0003;
+                                bubble.lifetime = 2000;
+                                this.colliders.push(bubble);
+                                this.drawables.push(bubble);
+                                this.movers.push(bubble);
+                                bubble.collisionAction = () => {
+                                    die();
+                                    dialog("YOU WERE CAUGHT BY I.C.E.");
+                                    bubble.dy = 0;
+                                    bubble.dx = 0;
+                               };
+                            }
+                        };
+                    };
+                    results.push(ice);
+                } 
+                return results;
+            })();
+            this.colliders = [...ices];
+            this.enemies = [...ices];
+            this.drawables = [...ices];
+            this.movers = [...ices];
         }
 
 
