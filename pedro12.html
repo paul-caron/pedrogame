@@ -649,16 +649,28 @@
             attack(dx, dy) {
                 if (!this.weapon) return;
                 if (!this.ammoType) return;
-                let bullet = new Bullet(sz, [13, 14, 15, 16], tileVertices, 0.0, 0.0, 0.0);
-                bullet.dx = dx;
-                bullet.dy = dy;
-                bullet.x = -worldOffsetX;
-                bullet.y = -worldOffsetY;
-                bullet.lifetime = 2000;
-                bullet.power = this.strength;
-                bullet.collisionAction = () => { };
-                bullet.animation = "spin";
-                bullets.push(bullet);
+                let shoot = (offX,offY) => {
+                  let bullet = new Bullet(sz, [13, 14, 15, 16], tileVertices, 0.0, 0.0, 0.0);
+                  bullet.dx = dx;
+                  bullet.dy = dy;
+                  bullet.x = -worldOffsetX + offX;
+                  bullet.y = -worldOffsetY + offY;
+                  bullet.lifetime = 2000;
+                  bullet.power = this.strength;
+                  bullet.collisionAction = () => { };
+                  bullet.animation = "spin";
+                  bullets.push(bullet);
+                }
+                if(this.weapon==="gun") shoot(0,0);
+                if(this.weapon==="double"){
+                  let angle = Math.atan2(dy,dx);
+                  let x1 = Math.cos(angle + Math.PI/2) * sz;
+                  let y1 = Math.sin(angle + Math.PI/2) * sz;
+                  shoot(x1,y1);
+                  let x2 = Math.cos(angle - Math.PI/2) * sz;
+                  let y2 = Math.sin(angle - Math.PI/2) * sz;
+                  shoot(x2,y2);
+                }
             }
             getPosition() {
                 return { x: -worldOffsetX, y: -worldOffsetY };
@@ -1118,6 +1130,12 @@
 
         function Level9() {
             Object.assign(this, initLevel());
+            let chest = new Chest(0, sz*16, 0.0);
+            chest.collisionAction = () => {
+                protagonist.weapon = "double";
+                dialog("YOU FOUND THE DOUBLE BARRELED GUN");
+                chest.open();
+            };
             let portal = new Portal(0.0,-sz*12,0.0);
             portal.collisionAction = () => {
                 controlsEnabled = false;
@@ -1283,8 +1301,8 @@
                 bricks3.forEach(b=>{b.moving=true;});
             };
             bricks.push(...bricks1,...bricks2,...bricks3);
-            this.drawables = [portal,...bricks,switch1,switch2,switch3];
-            this.colliders = [portal,...bricks,switch1,switch2,switch3];
+            this.drawables = [chest,portal,...bricks,switch1,switch2,switch3];
+            this.colliders = [chest,portal,...bricks,switch1,switch2,switch3];
             this.movers = [...bricks];
         }
 
