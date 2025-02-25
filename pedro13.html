@@ -261,6 +261,7 @@
         // Drawable Tile Class
         class Drawable {
             constructor(_textures, vertices, x = 0, y = 0, z = 0) { //WebglTexturesIndices, VerticesArray (x,y,z,u,v), x, y, z)
+                this.textureIndices = _textures;
                 this.textures = _textures.map((i) => textures[i]);
                 this.textureIndex = 0; // index to active texture
                 this.vertices = vertices;
@@ -403,6 +404,46 @@
                 this.y = y;
                 this.life = 10;
                 this.lifetime = Infinity;
+                this.expiring = () => {
+                    let shard1 = new Drawable(
+                                     this.textureIndices,
+                                     getVertices(this.halfWidth/2, 0,0,2));
+                    Object.assign(shard1, Mover);
+                    Object.assign(shard1, Doomed);
+                    shard1.x = this.x - sz/2;
+                    shard1.y = this.y + sz/2;
+                    shard1.dx = -0.0003;
+                    shard1.dy = 0.0003;
+                    let shard2 = new Drawable(
+                                     this.textureIndices,
+                                     getVertices(this.halfWidth/2, 0.5,0,2));
+                    Object.assign(shard2, Mover);
+                    Object.assign(shard2, Doomed);
+                    shard2.x = this.x + sz/2;
+                    shard2.y = this.y + sz/2;
+                    shard2.dx = 0.0003;
+                    shard2.dy = 0.0003;
+                    let shard3 = new Drawable(
+                                     this.textureIndices,
+                                     getVertices(this.halfWidth/2, 0.5,0.5,2));
+                    Object.assign(shard3, Mover);
+                    Object.assign(shard3, Doomed);
+                    shard3.x = this.x + sz/2;
+                    shard3.y = this.y - sz/2;
+                    shard3.dx = 0.0003;
+                    shard3.dy = -0.0003;
+                    let shard4 = new Drawable(
+                                     this.textureIndices,
+                                     getVertices(this.halfWidth/2, 0,0.5,2));
+                    Object.assign(shard4, Mover);
+                    Object.assign(shard4, Doomed);
+                    shard4.x = this.x - sz/2;
+                    shard4.y = this.y - sz/2;
+                    shard4.dx = -0.0003;
+                    shard4.dy = -0.0003;
+                    level.drawables.push(shard1,shard2,shard3,shard4);
+                    level.movers.push(shard1,shard2,shard3,shard4);
+                };
             }
             dying = function () { } // override
         }
@@ -711,6 +752,7 @@
                 dialog("YOU FOUND A TRANQUILIZER GUN");
                 chest.open();
             };
+
             let chest2 = new Chest(0.0, -0.2, 0.0);
             chest2.collisionAction = () => {
                 protagonist.ammoType = "fentanyl";
