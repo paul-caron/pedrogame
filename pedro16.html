@@ -1786,7 +1786,57 @@
                 return result;
             })();
 
+            let eye = new Eye_Boss(0,-0.4,0);
+            eye.animationTime = 10000;
+            eye.patrolY = 0.4;
+            eye.updateDxy = (dt) => {
+                if(!dt) return ;
+                eye.animationTime -= dt;
+
+                //loop animation cycle
+                if(eye.animationTime < 0){
+                  eye.animationTime = 10000;
+                  eye.patrolY *= -1;
+                }
+                
+                //seek
+                if(eye.animationTime <= 5000){
+                  let {x,y} = protagonist.getPosition();
+                  let dx = x - eye.x;
+                  let dy = y - eye.y;
+                  let angle = Math.atan2(dy,dx);
+                  let dist = Math.hypot(dy,dx);
+                  let force = 0.00002 * dt;
+                  eye.dx +=  force * Math.cos(angle);
+                  eye.dy +=  force * Math.sin(angle);
+                }
+
+                //patrol
+                if(eye.animationTime > 5000){
+                  let x = 0;
+                  let y = eye.patrolY;
+                  let dx = x - eye.x;
+                  let dy = y - eye.y;
+                  let angle = Math.atan2(dy,dx);
+                  let d = 0.0003 * dt;
+                  eye.dx =  d * Math.cos(angle);
+                  eye.dy =  d * Math.sin(angle);
+                  //shoot
+                  if(eye.animationTime < 6000){
+                    for(let i = 0; i < 6; ++i){
+                      let bubble = new Bubble(eye.x, eye.y, 0);
+                      let angle = 2 * Math.PI / 6 * i;
+                      bubble.dx = Math.cos(angle) * 0.0003 * dt;
+                      bubble.dy = Math.sin(angle) * 0.0003 * dt;
+                      level.drawables.push(bubble);
+                      level.movers.push(bubble);
+                    }
+                  }
+                }                
+            };
+
             let grump = new Grump_Boss(0,-0.4,0);
+            grump.life = 10;
             grump.reloadTime = 2000;
             let oldMove = grump.move.bind(grump);
             grump.move = (dt) => {
@@ -1853,7 +1903,7 @@
             this.drawables = [grump, ...bricks];
             this.movers = [grump];
 
-            grump.dying = () => {
+            eye.dying = () => {
                 this.drawables.push(portal);
                 this.colliders.push(portal);
                 this.colliders = this.colliders.filter(c => c.y != -18 * sz);
@@ -1861,6 +1911,15 @@
                 this.colliders.push(...otherBricks);
                 this.drawables.push(...otherBricks);
             };
+
+            grump.expiring = () => {
+                eye.x = grump.x;
+                eye.y = grump.y;
+               // this.colliders.push(eye);
+//                this.enemies.push(eye);
+                this.drawables.push(eye);
+                this.movers.push(eye);
+            }
       
        }
 
