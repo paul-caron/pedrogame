@@ -2434,6 +2434,11 @@
                                 let blood = new BloodParticle((e.x+b.x)/2, (e.y+b.y)/2);
                                 level.drawables.push(blood);
                                 level.movers.push(blood);
+                                blood.updateDxy = (dt) => {
+                                    let angle = Math.atan2(blood.dy, blood.dx);
+                                    blood.dx = Math.cos(angle+Math.PI/90)/800 ;
+                                    blood.dy = Math.sin(angle+Math.PI/900)/800 ;
+                                };
                                 b.damage(e);
                                 if (e.dead) e.dying();
                             }
