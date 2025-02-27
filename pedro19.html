@@ -797,7 +797,6 @@
             dialog("USE ARROW KEYS TO MOVE AROUND",
                 () => { dialog("SPACE BAR FOR ATTACK") });
 
-            let brick = new Switch(0.0, 0.2, 0.0);
             let chest = new Chest(-0.2, -0.0, 0.0);
             chest.collisionAction = () => {
                 protagonist.weapon = "gun";
@@ -830,8 +829,24 @@
 
             let npc = new NPC(0, -0.35, 0, `"I think Grump took her to prison. Be careful of your enemies and of the booby traps."`);
 
-            this.drawables = [chest, chest2, chest3, brick, portal, npc];
-            this.colliders = [chest, chest2, chest3, brick, portal, npc];
+
+            let sw = new Switch(0.0, 0.2, 0.0);
+            let oldCollisionAction = sw.collisionAction.bind(sw);
+            sw.collisionAction = () => {
+                if(!sw.enabled) return;
+
+                oldCollisionAction();
+                if(sw.animation === 'rotate'){
+                   this.drawables.push(portal);
+                   this.colliders.push(portal);
+                }else{
+                   this.drawables = this.drawables.filter(e=>e!=portal);
+                   this.colliders = this.colliders.filter(e=>e!=portal);
+                }
+            }
+
+            this.drawables = [chest, chest2, chest3, sw, npc];
+            this.colliders = [chest, chest2, chest3, sw, npc];
             this.movers = [];
             this.enemies = [];
         };
