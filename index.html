@@ -99,6 +99,9 @@
     <audio id="dorienigm" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/dorienigm.mp3" type="audio/mp3"
         preload="auto" loop>
     </audio>
+    <audio id="mom" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/mom.wav" type="audio/wav"
+        preload="auto" loop>
+    </audio>
     <button id="music" onClick="audio.paused?audio.play():audio.pause();">🎵</button>
     <button id="zoomIn" onClick="zoomFactor-=0.25;">&plus;</button>
     <button id="zoomOut" onClick="zoomFactor+=0.25;">&minus;</button>
@@ -112,7 +115,7 @@
         let background;
         let foreground;
         let bullets;
-        let audios = ["#fmtechno", "#hardgroove", "#dorienigm"];
+        let audios = ["#fmtechno", "#hardgroove", "#dorienigm", "#mom"];
         let audioIndex = 2;
         let audio = document.querySelector(audios[audioIndex]);
         let gl;
@@ -1335,6 +1338,7 @@
                     dialog(`"Thank you very much. Here is the exit"`);
                     this.colliders.push(portal);
                     this.drawables.push(portal);
+                    npc.collisionAction = () => {};
                 } else {
                     oldCollisionAction();
                 }
@@ -2170,6 +2174,10 @@
 
         function LevelEnding() {
             Object.assign(this, initLevel());
+            audio.pause();
+            audio = document.querySelector("#mom");
+            audio.play();
+
             let selena = new Selena(0,-0.2,0,`Thanks my love for rescuing me, Pedro. I want some latynx babies with you.(THE END)`);
             let oldCollisionAction = selena.collisionAction.bind(selena);
             let p1 = {x:-0.5,y:-0.0};
