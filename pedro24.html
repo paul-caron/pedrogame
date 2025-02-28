@@ -220,7 +220,6 @@
             assetsRoot + 'switch2.png',
             assetsRoot + 'switch3.png',
             assetsRoot + 'fogofwar.png',
-         //   "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Red_circle_frame_transparent.svg/1024px-Red_circle_frame_transparent.svg.png",
         ];
 
         // vertices for the background x,y,z,u,v
@@ -296,11 +295,11 @@
                 gl.useProgram(program);
                 
                 ////////////
-        //        gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
-        //        gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
-        //        gl.enableVertexAttribArray(program.positionLocation);
-        //        gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
-        //        gl.enableVertexAttribArray(program.texCoordLocation);
+                gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
+                gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
+                gl.enableVertexAttribArray(program.positionLocation);
+                gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+                gl.enableVertexAttribArray(program.texCoordLocation);
                 //////////
                 gl.uniform2f(program.textureOffsetLocation, ...this.textureOffset);
                 gl.uniform3f(program.positionOffsetLocation,
