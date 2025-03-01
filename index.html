@@ -87,20 +87,15 @@
         <button id="down" style="left: 1em; bottom: 3em;">&nbsp;</button>
         <button id="attack" style="right: 1em; bottom: 4em;"></button>
     </div>
-    <audio id="hardgroove" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedrohard.mp3" type="audio/mp3"
-        preload="auto" loop>
+    <audio id="hardgroove" src="assets/pedrohard.mp3" type="audio/mp3" preload="auto" loop>
     </audio>
-    <audio id="fmtechno" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/fmtechno.mp3" type="audio/mp3"
-        preload="auto" loop>
+    <audio id="fmtechno" src="assets/fmtechno.mp3" type="audio/mp3" preload="auto" loop>
     </audio>
-    <audio id="ether" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/pedroEther.mp3" type="audio/mp3"
-        preload="auto" loop>
+    <audio id="ether" src="assets/pedroEther.mp3" type="audio/mp3" preload="auto" loop>
     </audio>
-    <audio id="dorienigm" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/dorienigm.mp3" type="audio/mp3"
-        preload="auto" loop>
+    <audio id="dorienigm" src="assets/dorienigm.mp3" type="audio/mp3" preload="auto" loop>
     </audio>
-    <audio id="mom" src="https://cdn.jsdelivr.net/gh/paul-caron/webglstuff/assets/mom.wav" type="audio/wav"
-        preload="auto" loop>
+    <audio id="mom" src="assets/mom.wav" type="audio/wav" preload="auto" loop>
     </audio>
     <button id="music" onClick="audio.paused?audio.play():audio.pause();">🎵</button>
     <button id="zoomIn" onClick="if(zoomFactor>0)zoomFactor-=0.25;">&plus;</button>
@@ -161,11 +156,8 @@
             audio.pause();
             audio = document.querySelector("#ether");
             audio.play();
-        //    let optionBox = () => {
-                let answer = confirm('restart level?');
-                if(answer) restart();
-        //    };
-        //    setTimeout(optionBox, 2000);
+            let answer = confirm('restart level?');
+            if(answer) restart();
         }
 
         function initLevel() {
@@ -777,7 +769,7 @@
                     "indexPointer": 0,
                 };
                 this.animation = 'walking';
-                this.life = 4500;
+                this.life = 5000;
             }
         }
 
@@ -1992,6 +1984,12 @@
 
         function Level14() {
             Object.assign(this, initLevel());
+
+
+            dialog(`"I am Grump."`, () => {
+                dialog(`"I will make your nightmares great again!"`);
+            });
+
 
             let portal = new Portal(0.0, -32 * sz, 0.0);
             portal.collisionAction = () => {
