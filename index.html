@@ -31,310 +31,116 @@
     <button id="zoomIn" onClick="if(zoomFactor>0)zoomFactor-=0.25;">&plus;</button>
     <button id="zoomOut" onClick="if(zoomFactor<2)zoomFactor+=0.25;">&minus;</button>
     <canvas id="webglCanvas"></canvas>
+    <script src="src/globals.js"></script>
     <script src="src/classes.js"></script>
     <script src="src/levels.js"></script>
     <script>
-        // Globals
-        let level;
-        let protagonist;
-        let background;
-        let foreground;
-        let bullets;
-        let audios = ["#fmtechno", "#hardgroove", "#dorienigm", "#mom"];
-        let audioIndex = 2;
-        let audio = document.querySelector(audios[audioIndex]);
-        let gl;
-        let program;
-        let textures;
-        let zoomFactor = 1.25;
-        // Variables for world offset and control keys
-        let worldOffsetX = 0;
-        let worldOffsetY = 0;
-        let keys = {};
-        let controlsEnabled = true;
-        let collectables = {
-            //'item': number,
-        };
 
-        function dialog(text, callback = () => { }) {
-            const dialogBox = document.getElementById('dialogBox');
-            dialogBox.innerText = text;
-            setTimeout(() => {
-                dialogBox.innerText = "";
-                callback();
-            },
-                3000);
-        }
+try {
+    const canvas = document.getElementById('webglCanvas');
+    gl = canvas.getContext('webgl');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
-        function restart(){
-            keys = {};
-            level = new window[level.constructor.name]();
-            let weapon = protagonist.weapon;
-            let ammoType = protagonist.ammoType;
-            let strength = protagonist.strength;
-            let speed = protagonist.speed;
-            protagonist = new Protagonist();
-            protagonist.weapon = weapon;
-            protagonist.ammoType = ammoType;
-            protagonist.strength = strength;
-            protagonist.speed = speed;
-            audio.pause();
-            audio = document.querySelector(audios[audioIndex]);
-            audio.play();
-        }
+    if (!gl) {
+        console.error("WebGL not supported");
+        throw "No WebGL context";
+    }
 
-        function die() {
-            protagonist.dead = true;
-            audio.pause();
-            audio = document.querySelector("#ether");
-            audio.play();
-            let answer = confirm('restart level?');
-            if(answer) restart();
-        }
+    const textureImages = [];
+    let loadedTextures = 0;
 
-        function initLevel() {
-            controlsEnabled = true;
-            bullets = [];
-            worldOffsetX = 0;
-            worldOffsetY = 0;
-            return { colliders: [], enemies: [], drawables: [], movers: [], transitionProgress: 0.0 }
-        }
+    function loadImage(url) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = '*';
+            img.src = url;
+            img.onload = () => resolve(img);
+            img.onerror = (error) => reject(error);
+        });
+    }
 
-        const assetsRoot = "assets/";
-
-        const textureURLs = [
-            assetsRoot + 'sierpinski.png',
-            assetsRoot + 'pedro.png',
-            assetsRoot + 'pedro2.png',
-            assetsRoot + 'brick.png',
-            assetsRoot + 'chest.png',
-            assetsRoot + 'chest2.png',
-            assetsRoot + 'chest3.png',
-            assetsRoot + 'portal.png',
-            assetsRoot + 'portal1.png',
-            assetsRoot + 'portal2.png',
-            assetsRoot + 'portal3.png',
-            assetsRoot + 'portal4.png',
-            assetsRoot + 'portal5.png',
-            assetsRoot + 'syringe_up.png',
-            assetsRoot + 'syringe_right.png',
-            assetsRoot + 'syringe_down.png',
-            assetsRoot + 'syringe_left.png',
-            assetsRoot + 'chestopen.png',
-            assetsRoot + 'dea.png',
-            assetsRoot + 'dea2.png',
-            assetsRoot + 'bloodparticle.png',
-            assetsRoot + 'transparent.png',
-            assetsRoot + 'npc.png',
-            assetsRoot + 'npc2.png',
-            assetsRoot + 'leaff.png',
-            assetsRoot + 'ice.png',
-            assetsRoot + 'ice2.png',
-            assetsRoot + 'bubble.png',
-            assetsRoot + 'doge.png',
-            assetsRoot + 'doge2.png',
-            assetsRoot + 'grump.png',
-            assetsRoot + 'grump2.png',
-            assetsRoot + 'selena.png',
-            assetsRoot + 'selena2.png',
-            assetsRoot + 'eye.png',
-            assetsRoot + 'eye2.png',
-            assetsRoot + 'eye3.png',
-            assetsRoot + 'switch.png',
-            assetsRoot + 'switch2.png',
-            assetsRoot + 'switch3.png',
-            assetsRoot + 'fogofwar.png',
-            assetsRoot + 'credits.png',
-        ];
-
-        // vertices for the background x,y,z,u,v
-        const backgroundVertices = new Float32Array([
-            -1, 1, 0.0, 0.0, 1.0,
-            -1, -1, 0.0, 0.0, 0.0,
-            1, 1, 0.0, 1.0, 1.0,
-            -1, -1, 0.0, 0.0, 0.0,
-            1, 1, 0.0, 1.0, 1.0,
-            1, -1, 0.0, 1.0, 0.0,
-        ]);
-
-        // tile vertices x,y,z,u,v
-        const sz = 0.03125;
-        const tileVertices = new Float32Array([
-            -sz, sz, 0.0, 0.0, 1.0,
-            -sz, -sz, 0.0, 0.0, 0.0,
-            sz, sz, 0.0, 1.0, 1.0,
-            -sz, -sz, 0.0, 0.0, 0.0,
-            sz, sz, 0.0, 1.0, 1.0,
-            sz, -sz, 0.0, 1.0, 0.0,
-        ]);
-
-        const getVertices = (size, offsetU = 0, offsetV = 0, div = 1) => {
-        const vertices = new Float32Array([
-            -size, size, 0.0, (0.0/div+offsetU), (1.0/div+offsetV),
-            -size, -size, 0.0, (0.0/div+offsetU), (0.0/div+offsetV),
-            size, size, 0.0, (1.0/div+offsetU), (1.0/div+offsetV),
-            -size, -size, 0.0, (0.0/div+offsetU), (0.0/div+offsetV),
-            size, size, 0.0, (1.0/div+offsetU), (1.0/div+offsetV),
-            size, -size, 0.0, (1.0/div+offsetU), (0.0/div+offsetV),
-        ]);
-        return vertices;
-
-        };
-
-        // boss vertices x,y,z,u,v
-        const boss_sz = sz * 4;
-        const bossVertices = new Float32Array([
-            -boss_sz, boss_sz, 0.0, 0.0, 1.0,
-            -boss_sz, -boss_sz, 0.0, 0.0, 0.0,
-            boss_sz, boss_sz, 0.0, 1.0, 1.0,
-            -boss_sz, -boss_sz, 0.0, 0.0, 0.0,
-            boss_sz, boss_sz, 0.0, 1.0, 1.0,
-            boss_sz, -boss_sz, 0.0, 1.0, 0.0,
-        ]);
-
-        try {
-            const canvas = document.getElementById('webglCanvas');
-            gl = canvas.getContext('webgl');
-            let width = window.innerWidth;
-            let height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-
-            if (!gl) {
-                console.error("WebGL not supported");
-                throw "No WebGL context";
+    // Load all textures and store them in textureImages array in order
+    const loadTextures = textureURLs.map((url, index) => {
+        return loadImage(url).then((img) => {
+            textureImages[index] = img; // Ensure image is placed in the correct order
+            loadedTextures++;
+            if (loadedTextures === textureURLs.length) {
+                console.info('All images loaded successfully');
+                initWebGL(); // Proceed with WebGL initialization
             }
+        }).catch((error) => {
+            console.error('Failed to load image:', url, error);
+        });
+    });
 
-            const textureImages = [];
-            let loadedTextures = 0;
+    async function initWebGL() {
+        // Vertex shader program
+        const vsfetch = await fetch("src/textureVertexShader");
+        const vertexShaderSource = await vsfetch.text();
+        // Fragment shader program
+        const fsfetch = await fetch("src/textureFragmentShader");
+        const fragmentShaderSource = await fsfetch.text();
 
-            function loadImage(url) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.crossOrigin = '*';
-                    img.src = url;
-                    img.onload = () => resolve(img);
-                    img.onerror = (error) => reject(error);
-                });
+        // Shader compilation and linking utility functions
+        function compileShader(source, type) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error("ERROR compiling shader: " + gl.getShaderInfoLog(shader));
             }
+            return shader;
+        }
 
-            // Load all textures and store them in textureImages array in order
-            const loadTextures = textureURLs.map((url, index) => {
-                return loadImage(url).then((img) => {
-                    textureImages[index] = img; // Ensure image is placed in the correct order
-                    loadedTextures++;
-                    if (loadedTextures === textureURLs.length) {
-                        console.info('All images loaded successfully');
-                        initWebGL(); // Proceed with WebGL initialization
-                    }
-                }).catch((error) => {
-                    console.error('Failed to load image:', url, error);
-                });
-            });
+        function createProgram(vertexShader, fragmentShader) {
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error("ERROR linking program: " + gl.getProgramInfoLog(program));
+            }
+            return program;
+        }
 
-            function initWebGL() {
-                // Vertex shader program
-                const vertexShaderSource = `
-                attribute vec3 a_position;
-                attribute vec2 a_texCoord;
-                varying vec2 v_texCoord;
-                uniform vec3 u_positionOffset;
-                uniform vec2 u_textureOffset;
-                uniform float u_aspectRatio;
-                uniform float u_zoomFactor;
+        // Create shaders and program
+        const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+        const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+        program = createProgram(vertexShader, fragmentShader);
 
-                const float far = 100.0; //farthest distance visible to camera
-                const float near = 0.1; //closest distance visible to camera
-                float fov = radians(25.0*u_zoomFactor); //vertical y axis field of view of the camera
-                float f = 1.0 / tan(fov/2.0);                
+        // Get locations of the attributes and uniforms
+        program.positionLocation = gl.getAttribLocation(program, "a_position");
+        program.texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+        program.textureOffsetLocation = gl.getUniformLocation(program, "u_textureOffset");
+        program.positionOffsetLocation = gl.getUniformLocation(program, "u_positionOffset");
+        program.textureLocation = gl.getUniformLocation(program, "u_texture");
+        program.aspectRatioLocation = gl.getUniformLocation(program, "u_aspectRatio");
+        program.zoomFactorLocation = gl.getUniformLocation(program, "u_zoomFactor");
 
-                //projection and camera matrices
-                mat4 projection = mat4(f/u_aspectRatio, 0.0, 0.0, 0.0, 
-                                       0.0, f, 0.0, 0.0,
-                                       0.0, 0.0, (near + far)/(near-far), 1.0,
-                                       0.0, 0.0, (near * far * 2.0)/(near-far), 1.0);
+        // Create buffer and load data
+        program.positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
+        gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
+        gl.enableVertexAttribArray(program.positionLocation);
+        gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        gl.enableVertexAttribArray(program.texCoordLocation);
 
-                mat4 camera = mat4(1.0, 0.0, 0.0, 0.0, 
-                                   0.0, 1.0, 0.0, 0.0,
-                                   0.0, 0.0, 1.0, 0.0,
-                                   0.0, 0.0, 1.0, 1.0);
-
-                void main() {
-                    gl_Position = projection * camera * vec4(
-                            a_position.x + u_positionOffset.x,
-                            a_position.y - u_positionOffset.y,
-                            a_position.z + u_positionOffset.z, 1.0);
-                    v_texCoord = vec2(a_texCoord.x, 1.0 - a_texCoord.y) - u_textureOffset;
-                }
-            `;
-
-                // Fragment shader program
-                const fragmentShaderSource = `
-                precision mediump float;
-                varying vec2 v_texCoord;
-                uniform sampler2D u_texture;
-                void main() {
-                    gl_FragColor = texture2D(u_texture, v_texCoord) ;
-                }
-            `;
-
-                // Shader compilation and linking utility functions
-                function compileShader(source, type) {
-                    const shader = gl.createShader(type);
-                    gl.shaderSource(shader, source);
-                    gl.compileShader(shader);
-                    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                        console.error("ERROR compiling shader: " + gl.getShaderInfoLog(shader));
-                    }
-                    return shader;
-                }
-
-                function createProgram(vertexShader, fragmentShader) {
-                    const program = gl.createProgram();
-                    gl.attachShader(program, vertexShader);
-                    gl.attachShader(program, fragmentShader);
-                    gl.linkProgram(program);
-                    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                        console.error("ERROR linking program: " + gl.getProgramInfoLog(program));
-                    }
-                    return program;
-                }
-
-                // Create shaders and program
-                const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
-                const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
-                program = createProgram(vertexShader, fragmentShader);
-
-                // Get locations of the attributes and uniforms
-                program.positionLocation = gl.getAttribLocation(program, "a_position");
-                program.texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
-                program.textureOffsetLocation = gl.getUniformLocation(program, "u_textureOffset");
-                program.positionOffsetLocation = gl.getUniformLocation(program, "u_positionOffset");
-                program.textureLocation = gl.getUniformLocation(program, "u_texture");
-                program.aspectRatioLocation = gl.getUniformLocation(program, "u_aspectRatio");
-                program.zoomFactorLocation = gl.getUniformLocation(program, "u_zoomFactor");
-
-                // Create buffer and load data
-                program.positionBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
-                gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
-                gl.enableVertexAttribArray(program.positionLocation);
-                gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
-                gl.enableVertexAttribArray(program.texCoordLocation);
-
-                // Create the textures
-                textures = textureImages.map((img) => {
-                    let texture = gl.createTexture();
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-                    gl.generateMipmap(gl.TEXTURE_2D);
-                    // Set texture wrapping and filtering
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                    return texture;
-                });
+        // Create the textures
+        textures = textureImages.map((img) => {
+            let texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            // Set texture wrapping and filtering
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            return texture;
+        });
 
                 // Event Handlers
                 window.addEventListener('keyup', (event) => {
@@ -389,11 +195,10 @@
                     // Delta Time since last rendering
                     let dt = time - previousTime;
                     if (!(dt < 10))
-                    previousTime = time;
+                       previousTime = time;
 
                     if(!dt || dt > 32 || dt < 10 || protagonist.dead){
-                        //requestAnimationFrame(render);
-//                        return;
+
                     }
                     else{
                     // RESET SCREEN
@@ -506,10 +311,9 @@
                         }
                     }//end if control enabled
                     
-                    
-                    
                     foreground.draw(dt);
-}
+
+                    }
                     // LOOP
                     if (!protagonist.dead)
                         requestAnimationFrame(render);
