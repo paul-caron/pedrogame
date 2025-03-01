@@ -34,10 +34,11 @@
     <script src="src/globals.js"></script>
     <script src="src/classes.js"></script>
     <script src="src/levels.js"></script>
+    <script src="src/events.js"></script>
     <script>
 
 try {
-    const canvas = document.getElementById('webglCanvas');
+    canvas = document.getElementById('webglCanvas');
     gl = canvas.getContext('webgl');
     let width = window.innerWidth;
     let height = window.innerHeight;
@@ -142,65 +143,34 @@ try {
             return texture;
         });
 
-                // Event Handlers
-                window.addEventListener('keyup', (event) => {
-                    event.preventDefault();
-                    keys[event.key] = false;
-                });
 
-                window.addEventListener('keydown', (event) => {
-                    event.preventDefault();
-                    keys[event.key] = true;
-                });
-
-                canvas.addEventListener('touchstart', (event) => { event.preventDefault(); document.querySelector("#buttons").style.visibility = "visible"; });
-                document.querySelector("#left").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowLeft"] = true; });
-                document.querySelector("#left").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowLeft"] = false; });
-                document.querySelector("#right").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowRight"] = true; });
-                document.querySelector("#right").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowRight"] = false; });
-                document.querySelector("#up").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowUp"] = true; });
-                document.querySelector("#up").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowUp"] = false; });
-                document.querySelector("#down").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowDown"] = true; });
-                document.querySelector("#down").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowDown"] = false; });
-                document.querySelector("#attack").addEventListener("touchstart", (e) => { e.preventDefault(); keys[" "] = true; });
-                document.querySelector("#attack").addEventListener("touchend", (e) => { e.preventDefault(); keys[" "] = false; });
-
-                window.addEventListener('resize', (event) => {
-                    event.preventDefault();
-                    width = window.innerWidth;
-                    height = window.innerHeight;
-                    canvas.width = width;
-                    canvas.height = height;
-                });
-
-                // WebGL Rendering Settings
-                gl.enable(gl.DEPTH_TEST);
-                gl.enable(gl.SCISSOR_TEST);
-                gl.depthFunc(gl.GEQUAL);
-                gl.enable(gl.BLEND);
-                gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-                gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set background color
-                gl.clearDepth(0.0);
+        // WebGL Rendering Settings
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.SCISSOR_TEST);
+        gl.depthFunc(gl.GEQUAL);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set background color
+        gl.clearDepth(0.0);
 
 
 
-                level = new Level1();
+        initEvents();
+        level = new Level1();
                
 
-                // TIME
-                let previousTime = 0;
+        // TIME
+        let previousTime = 0;
 
-                // Render function to draw the map with texture
-                function render(time) {
-                    // Delta Time since last rendering
-                    let dt = time - previousTime;
-                    if (!(dt < 10))
-                       previousTime = time;
+        // THE LOOP
+        function render(time) {
+            // Delta Time since last rendering
+            let dt = time - previousTime;
+            if (!(dt < 10))
+                previousTime = time;
 
-                    if(!dt || dt > 32 || dt < 10 || protagonist.dead){
-
-                    }
-                    else{
+            if(!dt || dt > 32 || dt < 10 || protagonist.dead){}
+            else{
                     // RESET SCREEN
                     // Set the aspect ratio uniform
                     gl.useProgram(program);
@@ -313,18 +283,19 @@ try {
                     
                     foreground.draw(dt);
 
-                    }
-                    // LOOP
-                    if (!protagonist.dead)
-                        requestAnimationFrame(render);
-                }
-
-                // Start the rendering loop
-                render(0);
             }
-        } catch (e) {
-            console.error("PROGRAM EXIT : ", e);
+
+            // LOOP AGAIN
+            if (!protagonist.dead)
+                requestAnimationFrame(render);
         }
+
+        // Start the rendering loop
+        render(0);
+    }
+} catch (e) {
+    console.error("PROGRAM EXIT : ", e);
+}
     </script>
 </body>
 

@@ -1,0 +1,34 @@
+function initEvents(){
+
+        // Event Handlers
+        window.addEventListener('keyup', (event) => {
+            event.preventDefault();
+            keys[event.key] = false;
+        });
+
+        window.addEventListener('keydown', (event) => {
+            event.preventDefault();
+            keys[event.key] = true;
+        });
+
+        window.addEventListener('resize', (event) => {
+            event.preventDefault();
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+
+        canvas.addEventListener('touchstart', (event) => { event.preventDefault(); document.querySelector("#buttons").style.visibility = "visible"; });
+        document.querySelector("#left").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowLeft"] = true; });
+        document.querySelector("#left").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowLeft"] = false; });
+        document.querySelector("#right").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowRight"] = true; });
+        document.querySelector("#right").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowRight"] = false; });
+        document.querySelector("#up").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowUp"] = true; });
+        document.querySelector("#up").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowUp"] = false; });
+        document.querySelector("#down").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowDown"] = true; });
+        document.querySelector("#down").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowDown"] = false; });
+        document.querySelector("#attack").addEventListener("touchstart", (e) => { e.preventDefault(); keys[" "] = true; });
+        document.querySelector("#attack").addEventListener("touchend", (e) => { e.preventDefault(); keys[" "] = false; });
+
+}

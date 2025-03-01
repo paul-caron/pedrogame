@@ -1,4 +1,5 @@
         // Globals
+        let canvas;
         let level;
         let protagonist;
         let background;
