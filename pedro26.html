@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedro Escobar 2025</title>
+    <title>Pedro Escobar</title>
     <style>
         body {
             user-select: none;
@@ -104,8 +104,10 @@
     </audio>
     <button id="music" onClick="audio.paused?audio.play():audio.pause();">🎵</button>
     <button id="zoomIn" onClick="if(zoomFactor>0)zoomFactor-=0.25;">&plus;</button>
-    <button id="zoomOut" onClick="if(zoomFactor<2)zoomFactor+=0.25;">&minus;</button>
+    <button id="zoomOut" onClick="zoomFactor+=0.25;">&minus;</button>
     <canvas id="webglCanvas"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
     <script>
         // Globals
         let level;
@@ -119,7 +121,7 @@
         let gl;
         let program;
         let textures;
-        let zoomFactor = 1.25;
+        let zoomFactor = 1.0;
         // Variables for world offset and control keys
         let worldOffsetX = 0;
         let worldOffsetY = 0;
