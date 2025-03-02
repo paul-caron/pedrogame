@@ -26,6 +26,9 @@
             draw(dt) { // delta time from previous render
                 gl.useProgram(program);
                 ////////////
+                gl.uniform1f(program.aspectRatioLocation, canvas.width / canvas.height);
+                gl.uniform1f(program.zoomFactorLocation, zoomFactor);
+                ////////////
                 gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
                 gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
                 gl.enableVertexAttribArray(program.positionLocation);
@@ -34,9 +37,10 @@
                 //////////
                 gl.uniform2f(program.textureOffsetLocation, ...this.textureOffset);
                 gl.uniform3f(program.positionOffsetLocation,
-                    this.x + this.positionOffset[0],
-                    this.y + this.positionOffset[1],
-                    this.z + this.positionOffset[2]);
+                   this.x + this.positionOffset[0],
+                   this.y + this.positionOffset[1],
+                   this.z + this.positionOffset[2]
+                );
                 let animation = this.animations[this.animation];
                 this.textureIndex = animation.textureIndices[animation.indexPointer];
                 gl.bindTexture(gl.TEXTURE_2D, this.textures[this.textureIndex]);
@@ -57,6 +61,8 @@
             }
             draw(dt) { // delta time from previous render
                 gl.useProgram(program2);
+                gl.uniform1f(program2.aspectRatioLocation, canvas.width / canvas.height);
+                gl.uniform1f(program2.zoomFactorLocation, zoomFactor);
                 ////////////
                 gl.bindBuffer(gl.ARRAY_BUFFER, program2.positionBuffer);
                 gl.vertexAttribPointer(program2.positionLocation, 3, gl.FLOAT, false, 7 * 4, 0);
@@ -572,6 +578,26 @@
                   bullet.collisionAction = () => { };
                   bullet.animation = "spin";
                   bullets.push(bullet);
+
+                  let line = new Line(new Float32Array([
+                    worldOffsetX + bullet.x,-worldOffsetY - bullet.y,0, 1,0,1,0,
+                    worldOffsetX + bullet.x,-worldOffsetY - bullet.y,0, 1,1,0,1,
+                  ]));
+                  line.origin = {};
+                  line.origin.x = bullet.x;
+                  line.origin.y = bullet.y;
+
+                  Object.assign(line, Mover);
+                  Object.assign(line, Doomed);
+                  line.updateDxy = (dt) => {
+                      line.vertices[0] = worldOffsetX + line.origin.x;
+                      line.vertices[1] = -worldOffsetY - line.origin.y;
+                      line.vertices[7] = worldOffsetX + bullet.x;
+                      line.vertices[8] = -worldOffsetY - bullet.y;
+                  };
+                  line.lifetime = 2000;
+                  level.drawables.push(line);
+                  level.movers.push(line);
                 }
                 if(this.weapon==="gun") shoot(0,0);
                 if(this.weapon==="double"){

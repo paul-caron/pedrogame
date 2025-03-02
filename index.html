@@ -200,9 +200,12 @@ let line = new Line(new Float32Array([
             else{
                     // RESET SCREEN
                     // Set the aspect ratio uniform
-                    gl.useProgram(program);
-                    gl.uniform1f(program.aspectRatioLocation, canvas.width / canvas.height);
-                    gl.uniform1f(program.zoomFactorLocation, zoomFactor);
+                 //   gl.useProgram(program2);
+                 //   gl.uniform1f(program2.aspectRatioLocation, canvas.width / canvas.height);
+                 //   gl.uniform1f(program2.zoomFactorLocation, zoomFactor);
+                //    gl.useProgram(program);
+                //    gl.uniform1f(program.aspectRatioLocation, canvas.width / canvas.height);
+               //     gl.uniform1f(program.zoomFactorLocation, zoomFactor);
                     gl.viewport(0, 0, canvas.width, canvas.height);
                     if (level.transitionProgress < 1.0) level.transitionProgress += 0.01;
                     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -313,10 +316,10 @@ let line = new Line(new Float32Array([
 
 
 
-                    gl.useProgram(program2);
-                    gl.uniform1f(program2.aspectRatioLocation, canvas.width / canvas.height);
-                    gl.uniform1f(program2.zoomFactorLocation, zoomFactor);
-                    line.draw();
+                 //   gl.useProgram(program2);
+                 //   gl.uniform1f(program2.aspectRatioLocation, canvas.width / canvas.height);
+                //    gl.uniform1f(program2.zoomFactorLocation, zoomFactor);
+                //    line.draw(dt);
             }
 
             // LOOP AGAIN
