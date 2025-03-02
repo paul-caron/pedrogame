@@ -9,7 +9,8 @@
         let audioIndex = 2;
         let audio = document.querySelector(audios[audioIndex]);
         let gl;
-        let program;
+        let program;  //textures
+        let program2; //lines
         let textures;
         let zoomFactor = 1.25;
         // Variables for world offset and control keys

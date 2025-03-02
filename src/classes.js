@@ -25,7 +25,6 @@
             }
             draw(dt) { // delta time from previous render
                 gl.useProgram(program);
-                
                 ////////////
                 gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
                 gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
@@ -49,6 +48,24 @@
                     animation.indexPointer++;
                     animation.indexPointer %= animation.textureIndices.length;
                 }
+            }
+        };
+
+        class Line {
+            constructor(vertices) {
+                this.vertices = vertices;  //x,y,z,r,g,b,a
+            }
+            draw(dt) { // delta time from previous render
+                gl.useProgram(program2);
+                ////////////
+                gl.bindBuffer(gl.ARRAY_BUFFER, program2.positionBuffer);
+                gl.vertexAttribPointer(program2.positionLocation, 3, gl.FLOAT, false, 7 * 4, 0);
+                gl.enableVertexAttribArray(program2.positionLocation);
+                gl.vertexAttribPointer(program2.colorLocation, 4, gl.FLOAT, false, 7 * 4, 3 * 4);
+                gl.enableVertexAttribArray(program2.colorLocation);
+                //////////
+                gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+                gl.drawArrays(gl.LINES, 0, this.vertices.length / 7);
             }
         };
 

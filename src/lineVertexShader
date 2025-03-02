@@ -1,5 +1,9 @@
+precision mediump float;
+
 attribute vec3 a_position;   // Vertex position
 attribute vec4 a_color;      // Vertex color (RGBA)
+uniform float u_aspectRatio;
+uniform float u_zoomFactor;
 
 varying vec4 v_color;        // Color to pass to the fragment shader
 
@@ -7,7 +11,7 @@ const float far = 100.0; // Farthest distance visible to camera
 const float near = 0.1;  // Closest distance visible to camera
 
 // Field of view and projection matrix calculations
-float fov = radians(25.0); // Vertical y-axis field of view of the camera
+float fov = radians(25.0*u_zoomFactor); // Vertical y-axis field of view of the camera
 float f = 1.0 / tan(fov / 2.0);
 
 mat4 projection = mat4(f / u_aspectRatio, 0.0, 0.0, 0.0,

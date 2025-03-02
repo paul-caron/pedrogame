@@ -85,6 +85,13 @@ try {
         const fsfetch = await fetch("src/textureFragmentShader");
         const fragmentShaderSource = await fsfetch.text();
 
+        // Vertex shader program
+        const vsfetch2 = await fetch("src/lineVertexShader");
+        const vertexShaderSource2 = await vsfetch2.text();
+        // Fragment shader program
+        const fsfetch2 = await fetch("src/lineFragmentShader");
+        const fragmentShaderSource2 = await fsfetch2.text();
+
         // Shader compilation and linking utility functions
         function compileShader(source, type) {
             const shader = gl.createShader(type);
@@ -112,6 +119,10 @@ try {
         const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
         program = createProgram(vertexShader, fragmentShader);
 
+        const vertexShader2 = compileShader(vertexShaderSource2, gl.VERTEX_SHADER);
+        const fragmentShader2 = compileShader(fragmentShaderSource2, gl.FRAGMENT_SHADER);
+        program2 = createProgram(vertexShader2, fragmentShader2);
+
         // Get locations of the attributes and uniforms
         program.positionLocation = gl.getAttribLocation(program, "a_position");
         program.texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
@@ -121,6 +132,11 @@ try {
         program.aspectRatioLocation = gl.getUniformLocation(program, "u_aspectRatio");
         program.zoomFactorLocation = gl.getUniformLocation(program, "u_zoomFactor");
 
+        program2.positionLocation = gl.getAttribLocation(program2, "a_position");
+        program2.colorLocation = gl.getAttribLocation(program2, "a_color");
+        program2.aspectRatioLocation = gl.getUniformLocation(program2, "u_aspectRatio");
+        program2.zoomFactorLocation = gl.getUniformLocation(program2, "u_zoomFactor");
+
         // Create buffer and load data
         program.positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
@@ -128,6 +144,14 @@ try {
         gl.enableVertexAttribArray(program.positionLocation);
         gl.vertexAttribPointer(program.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
         gl.enableVertexAttribArray(program.texCoordLocation);
+
+
+        program2.positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, program2.positionBuffer);
+        gl.vertexAttribPointer(program2.positionLocation, 3, gl.FLOAT, false, 7 * 4, 0);
+        gl.enableVertexAttribArray(program2.positionLocation);
+        gl.vertexAttribPointer(program2.colorLocation, 4, gl.FLOAT, false, 7 * 4, 3 * 4);
+        gl.enableVertexAttribArray(program2.colorLocation);
 
         // Create the textures
         textures = textureImages.map((img) => {
@@ -144,6 +168,7 @@ try {
         });
 
 
+
         // WebGL Rendering Settings
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.SCISSOR_TEST);
@@ -157,8 +182,10 @@ try {
 
         initEvents();
         level = new Level1();
-               
-
+let line = new Line(new Float32Array([
+-0.5,0,0, 1,1,1,1,
+0.5,0,0, 1,1,1,1,
+]));
         // TIME
         let previousTime = 0;
 
@@ -280,9 +307,16 @@ try {
                             protagonist.attack(protagonist.dx, protagonist.dy);
                         }
                     }//end if control enabled
-                    
+
+
                     foreground.draw(dt);
 
+
+
+                    gl.useProgram(program2);
+                    gl.uniform1f(program2.aspectRatioLocation, canvas.width / canvas.height);
+                    gl.uniform1f(program2.zoomFactorLocation, zoomFactor);
+                    line.draw();
             }
 
             // LOOP AGAIN
