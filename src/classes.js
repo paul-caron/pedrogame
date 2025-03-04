@@ -22,12 +22,14 @@
                 this.y = y;
                 this.z = z;
                 this.collisionAction = () => { };
+                this.colorModifier = [1.0,1.0,1.0,1.0];
             }
             draw(dt) { // delta time from previous render
                 gl.useProgram(program);
                 ////////////
                 gl.uniform1f(program.aspectRatioLocation, canvas.width / canvas.height);
                 gl.uniform1f(program.zoomFactorLocation, zoomFactor);
+                gl.uniform4f(program.colorModifierLocation, ...this.colorModifier);
                 ////////////
                 gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
                 gl.vertexAttribPointer(program.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
@@ -52,6 +54,7 @@
                     animation.indexPointer++;
                     animation.indexPointer %= animation.textureIndices.length;
                 }
+                this.colorModifier = [1,1,1,1];
             }
         };
 

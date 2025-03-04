@@ -132,6 +132,7 @@ try {
         program.textureLocation = gl.getUniformLocation(program, "u_texture");
         program.aspectRatioLocation = gl.getUniformLocation(program, "u_aspectRatio");
         program.zoomFactorLocation = gl.getUniformLocation(program, "u_zoomFactor");
+        program.colorModifierLocation = gl.getUniformLocation(program, "u_colorModifier");
 
         program2.positionLocation = gl.getAttribLocation(program2, "a_position");
         program2.colorLocation = gl.getAttribLocation(program2, "a_color");
@@ -236,6 +237,7 @@ try {
                         bullets.forEach((b) => {
                             if (e.isColliding(b.x, b.y, sz)) {
                                 if (e.dead) return;
+                                e.colorModifier = [2,2,2,0.5];
                                 let x = (Math.max(e.x - e.halfWidth, b.x-b.halfWidth)+Math.min(e.x+e.halfWidth, b.x+b.halfWidth))/2;
                                 let y = (Math.max(e.y - e.halfWidth, b.y-b.halfWidth)+Math.min(e.y+e.halfWidth, b.y+b.halfWidth))/2;
                                 let blood = new BloodParticle(x, y);
