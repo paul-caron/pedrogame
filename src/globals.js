@@ -92,6 +92,17 @@ const tileVertices = new Float32Array([
     sz, -sz, 0.0, 1.0, 0.0,
 ]);
 
+// boss vertices x,y,z,u,v
+const bossVertices = new Float32Array([
+    -boss_sz, boss_sz, 0.0, 0.0, 1.0,
+    -boss_sz, -boss_sz, 0.0, 0.0, 0.0,
+    boss_sz, boss_sz, 0.0, 1.0, 1.0,
+    -boss_sz, -boss_sz, 0.0, 0.0, 0.0,
+    boss_sz, boss_sz, 0.0, 1.0, 1.0,
+    boss_sz, -boss_sz, 0.0, 1.0, 0.0,
+]);
+
+
 const getVertices = (size, offsetU = 0, offsetV = 0, div = 1) => {
     const vertices = new Float32Array([
         -size, size, 0.0, (0.0/div+offsetU), (1.0/div+offsetV),
@@ -104,15 +115,6 @@ const getVertices = (size, offsetU = 0, offsetV = 0, div = 1) => {
     return vertices;
 };
 
-// boss vertices x,y,z,u,v
-const bossVertices = new Float32Array([
-    -boss_sz, boss_sz, 0.0, 0.0, 1.0,
-    -boss_sz, -boss_sz, 0.0, 0.0, 0.0,
-    boss_sz, boss_sz, 0.0, 1.0, 1.0,
-    -boss_sz, -boss_sz, 0.0, 0.0, 0.0,
-    boss_sz, boss_sz, 0.0, 1.0, 1.0,
-    boss_sz, -boss_sz, 0.0, 1.0, 0.0,
-]);
 
 function dialog(text, callback = () => { }) {
     const dialogBox = document.getElementById('dialogBox');
@@ -146,8 +148,10 @@ function die() {
     audio.pause();
     audio = document.querySelector("#ether");
     audio.play();
-    let answer = confirm('restart level?');
-    if(answer) restart();
+    setTimeout(()=>{
+        let answer = confirm('restart level?');
+        if(answer) restart();
+    }, 6000);
 }
 
 function initLevel() {
