@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedro Escobar 2025</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="stylesheet" href="src/stylesheet.css">
     </style>
 </head>
@@ -177,17 +178,15 @@ try {
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set background color
         gl.clearDepth(0.0);
-
+        //gl.lineWidth(5);
 
 
         initEvents();
         level = new Level1();
-let line = new Line(new Float32Array([
--0.5,0,0, 1,1,1,1,
-0.5,0,0, 1,1,1,1,
-]));
+
         // TIME
         let previousTime = 0;
+
 
         // THE LOOP
         function render(time) {
@@ -199,13 +198,6 @@ let line = new Line(new Float32Array([
             if(!dt || dt > 32 || dt < 10 || protagonist.dead){}
             else{
                     // RESET SCREEN
-                    // Set the aspect ratio uniform
-                 //   gl.useProgram(program2);
-                 //   gl.uniform1f(program2.aspectRatioLocation, canvas.width / canvas.height);
-                 //   gl.uniform1f(program2.zoomFactorLocation, zoomFactor);
-                //    gl.useProgram(program);
-                //    gl.uniform1f(program.aspectRatioLocation, canvas.width / canvas.height);
-               //     gl.uniform1f(program.zoomFactorLocation, zoomFactor);
                     gl.viewport(0, 0, canvas.width, canvas.height);
                     if (level.transitionProgress < 1.0) level.transitionProgress += 0.01;
                     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -244,11 +236,9 @@ let line = new Line(new Float32Array([
                         bullets.forEach((b) => {
                             if (e.isColliding(b.x, b.y, sz)) {
                                 if (e.dead) return;
-                               // let blood = new BloodParticle((e.x+b.x)/2, (e.y+b.y)/2);
                                 let x = (Math.max(e.x - e.halfWidth, b.x-b.halfWidth)+Math.min(e.x+e.halfWidth, b.x+b.halfWidth))/2;
                                 let y = (Math.max(e.y - e.halfWidth, b.y-b.halfWidth)+Math.min(e.y+e.halfWidth, b.y+b.halfWidth))/2;
                                 let blood = new BloodParticle(x, y);
-                               // let blood = new BloodParticle((e.x*e.halfWidth+b.x*b.halfWidth)/(2*(e.halfWidth+b.halfWidth), (e.y*e.halfWidth+b.y*b.halfWidth)/(2*(e.halfWidth*b.halfWidth))));
                                 level.drawables.push(blood);
                                 level.movers.push(blood);
                                 blood.updateDxy = (dt) => {
@@ -281,8 +271,10 @@ let line = new Line(new Float32Array([
                     if (controlsEnabled) {
                         const d = 0.0003 * protagonist.speed * dt; //delta or offset change
 
-                        const oldOffsetX = worldOffsetX;
-                        const oldOffsetY = worldOffsetY;
+
+                        let oldOffsetX = new Number(worldOffsetX);
+                        let oldOffsetY = new Number(worldOffsetY);
+
 
                         if (keys["ArrowLeft"]) { worldOffsetX += d; }
                         if (keys["ArrowRight"]) { worldOffsetX -= d; }
