@@ -6,6 +6,7 @@
             audio = document.querySelector("#fmtechno");
             audio.play();
             background = new Drawable([41], backgroundVertices);
+            die = () => {protagonist.dead = false;};
         }
 
         function Level13() {
