@@ -288,12 +288,12 @@ try {
                         }
 
                         // REVERSE PROTAGONIST MOVEMENTS IF HITS AN OBJECT
-                        level.colliders.sort((a,b)=>{
+                        let collided = level.colliders.filter(c=>{return c.isColliding(-worldOffsetX, -worldOffsetY, sz);});
+                        collided = collided.sort((a,b)=>{
                             let [x,y] = [-oldOffsetX,-oldOffsetY];
                             return (Math.hypot(a.x-x,a.y-y)) > (Math.hypot(b.x-x,b.y-y));
                         });
-                        level.colliders.forEach((c) => {
-                            if (c.isColliding(-worldOffsetX, -worldOffsetY, sz)) {
+                        collided.forEach((c) => {
                                 let [x,y] = [-oldOffsetX,-oldOffsetY];
                                 // NON STICKY / WALL SLIDE
                                 if(Math.abs(c.y-y) < Math.abs(c.x-x)){  
@@ -305,8 +305,9 @@ try {
                                     worldOffsetY = oldOffsetY;
                                 }
                                 c.collisionAction();
-                            }
                         });
+
+
 
                         // SPAWN PROTAGONIST BULLETS
                         if (keys[" "]) {
