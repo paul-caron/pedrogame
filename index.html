@@ -237,7 +237,7 @@ try {
                         bullets.forEach((b) => {
                             if (e.isColliding(b.x, b.y, sz)) {
                                 if (e.dead) return;
-                                e.colorModifier = [2,2,2,0.5];
+                                e.colorModifier = [Math.sin(time)+1,1,1,1];
                                 let x = (Math.max(e.x - e.halfWidth, b.x-b.halfWidth)+Math.min(e.x+e.halfWidth, b.x+b.halfWidth))/2;
                                 let y = (Math.max(e.y - e.halfWidth, b.y-b.halfWidth)+Math.min(e.y+e.halfWidth, b.y+b.halfWidth))/2;
                                 let blood = new BloodParticle(x, y);
