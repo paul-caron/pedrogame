@@ -4,11 +4,18 @@ function initEvents(){
     window.addEventListener('keyup', (event) => {
         event.preventDefault();
         keys[event.key] = false;
+        if (event.key === " ")
+          protagonist.attack();
     });
 
     window.addEventListener('keydown', (event) => {
         event.preventDefault();
+        if(protagonist.isCharging) return; //dont move when charging
         keys[event.key] = true;
+        if (event.key === " "){
+          protagonist.isCharging = true;
+          keys = {}; //dump all key presses, dont move when charging
+        }
     });
 
     window.addEventListener('resize', (event) => {
@@ -28,7 +35,13 @@ function initEvents(){
     document.querySelector("#up").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowUp"] = false; });
     document.querySelector("#down").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowDown"] = true; });
     document.querySelector("#down").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowDown"] = false; });
-    document.querySelector("#attack").addEventListener("touchstart", (e) => { e.preventDefault(); keys[" "] = true; });
-    document.querySelector("#attack").addEventListener("touchend", (e) => { e.preventDefault(); keys[" "] = false; });
+    document.querySelector("#attack").addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        protagonist.isCharging = true;
+    });
+    document.querySelector("#attack").addEventListener("touchend", (e) => {
+        e.preventDefault();
+        protagonist.attack();
+    });
 
 }

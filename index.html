@@ -310,11 +310,13 @@ try {
                             }
                         });
 
-                        // SPAWN PROTAGONIST BULLETS
-                        if (keys[" "]) {
-                            keys[" "] = false;
-                            protagonist.attack(protagonist.dx, protagonist.dy);
+                        // charge the attack
+                        if(protagonist.isCharging){
+                           protagonist.charge(dt);
+                           let c = (Math.sin(time)+1)/2;
+                           protagonist.colorModifier = [c,c,c,1];
                         }
+
                     }//end if control enabled
 
                     foreground.draw(dt);

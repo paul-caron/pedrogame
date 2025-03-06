@@ -70,6 +70,7 @@ const textureURLs = [
     assetsRoot + 'switch3.png',
     assetsRoot + 'fogofwar.png',
     assetsRoot + 'credits.png',
+    assetsRoot + 'bubblered.png',
 ];
 
 // vertices for the background x,y,z,u,v

@@ -566,10 +566,21 @@ class Protagonist extends Drawable {
         this.dx = 0;
         this.dy = 0;
         let bullets = [];
+        this.chargedTime = 0;
     }
-    attack(dx, dy) {
+    attack() {
+        this.isCharging = false;
+
         if (!this.weapon) return;
         if (!this.ammoType) return;
+
+        let dx = this.dx;
+        let dy = this.dy;
+
+        if(this.chargedTime >= 3000){
+            this.attack2(); return;
+        }
+
         let shoot = (offX,offY) => {
           let bullet = new Bullet(sz, [13, 14, 15, 16], tileVertices, 0.0, 0.0, 0.0);
           bullet.dx = dx;
@@ -602,7 +613,12 @@ class Protagonist extends Drawable {
           level.drawables.push(line);
           level.movers.push(line);
         }
-        if(this.weapon==="gun") shoot(0,0);
+        if(this.weapon==="gun"){
+          let angle = Math.atan2(dy,dx);
+          let x = Math.cos(angle) * sz;
+          let y = Math.sin(angle) * sz;
+          shoot(x,y);
+        }
         if(this.weapon==="double"){
           let angle = Math.atan2(dy,dx);
           let x1 = Math.cos(angle + Math.PI/2) * sz;
@@ -612,6 +628,26 @@ class Protagonist extends Drawable {
           let y2 = Math.sin(angle - Math.PI/2) * sz;
           shoot(x2,y2);
         }
+        this.chargedTime = 0;
+    }
+    attack2(){
+        const n = 6;
+        for(let i=0;i<n;++i){
+        let angle = i * Math.PI * 2 / n;
+        let bullet = new Bullet(sz, [42], tileVertices, 0.0, 0.0, 0.0);
+        bullet.dx = Math.cos(angle) * 0.003;
+        bullet.dy = Math.sin(angle) * 0.003;
+        bullet.x = -worldOffsetX ;
+        bullet.y = -worldOffsetY;
+        bullet.lifetime = 2000;
+        bullet.power = this.strength * 2;
+        bullet.collisionAction = () => { };
+        bullets.push(bullet);
+        }
+        this.chargedTime = 0;
+    }
+    charge(dt){
+        this.chargedTime += dt;
     }
     getPosition() {
         return { x: -worldOffsetX, y: -worldOffsetY };
