@@ -58,6 +58,23 @@ class Drawable {
     }
 };
 
+class Char extends Drawable{
+
+    constructor(char, x, y, z){
+        let row = 7;
+        let col = 0;
+        let vertices = new Float32Array([
+            -sz/2, sz, 0.0, (0.0+col)/16,(1.0+row)/8,
+            -sz/2, -sz, 0.0,(0.0+col)/16,(0.0+row)/8,
+            sz/2, sz, 0.0, (1.0+col)/16, (1.0+row)/8,
+            -sz/2, -sz, 0.0,(0.0+col)/16,(0.0+row)/8,
+            sz/2, sz, 0.0, (1.0+col)/16, (1.0+row)/8,
+            sz/2, -sz, 0.0, (1.0+col)/16,(0.0+row)/8,
+        ]);
+        super([43],vertices,x,y,z);
+    }
+};
+
 class Line {
     constructor(vertices) {
         this.vertices = vertices;  //x,y,z,r,g,b,a

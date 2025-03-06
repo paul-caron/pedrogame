@@ -71,6 +71,7 @@ const textureURLs = [
     assetsRoot + 'fogofwar.png',
     assetsRoot + 'credits.png',
     assetsRoot + 'bubblered.png',
+    assetsRoot + 'font.png',
 ];
 
 // vertices for the background x,y,z,u,v
