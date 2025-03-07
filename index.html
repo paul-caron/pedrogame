@@ -10,7 +10,7 @@
 </head>
 
 <body>
-    <pre id="dialogBox"></pre>
+    <div id="dialogBox"><img id="dialogAvatar"><pre id="dialogText">start</pre></div>
     <div id="buttons">
         <button id="left" style="left: 0em; bottom: 4em;">&nbsp;</button>
         <button id="up" style="left: 1em; bottom: 5em;">&nbsp;</button>
@@ -186,7 +186,7 @@ try {
         initEvents();
         level = new Level1();
 
-//let char = new Char('a',0,0,0);
+        let char = new Char('!',0,0,0);
 
         // TIME
         let previousTime = 0;
@@ -225,6 +225,8 @@ try {
                         d.positionOffset = [worldOffsetX, worldOffsetY, 0.0];
                         d.draw(dt);
                     });
+
+                    if (controlsEnabled) {
 
                     // DRAW PROTAGONIST BULLETS
                     bullets.forEach((b) => {
@@ -272,7 +274,6 @@ try {
                     level.enemies = level.enemies.filter(m => { return m.lifetime === undefined || !(m.expired); });
 
                     // CONTROLS
-                    if (controlsEnabled) {
                         const d = 0.0003 * protagonist.speed * dt; //delta or offset change
 
                         let oldOffsetX = new Number(worldOffsetX);

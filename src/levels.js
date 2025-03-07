@@ -59,11 +59,14 @@
             portal.collisionAction = () => {
                 protagonist.animation = "blink";
                 controlsEnabled = false;
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking(
+                    "YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level14();
-                    });
+                    },
+                    "assets/portal.png"
+                );
                 portal.collisionAction = () => { };
             };
 
@@ -117,41 +120,41 @@
             background = new Drawable([0], backgroundVertices);
             foreground = new Drawable([40], backgroundVertices);
 
-            dialog("USE ARROW KEYS TO MOVE AROUND",
-                () => { dialog("SPACE BAR FOR ATTACK") });
+            dialogBlocking("USE ARROW KEYS TO MOVE AROUND",
+                () => { dialogBlocking("SPACE BAR FOR ATTACK") });
 
             let chest = new Chest(-0.2, -0.0, 0.0);
             chest.collisionAction = () => {
                 protagonist.weapon = "gun";
-                dialog("YOU FOUND A TRANQUILIZER GUN");
+                dialogBlocking("YOU FOUND A TRANQUILIZER GUN",null,'assets/chest3.png');
                 chest.open();
             };
 
             let chest2 = new Chest(0.0, -0.2, 0.0);
             chest2.collisionAction = () => {
                 protagonist.ammoType = "fentanyl";
-                dialog("YOU FOUND FENTANYL TRANQUILIZER SHOTS");
+                dialogBlocking("YOU FOUND FENTANYL TRANQUILIZER SHOTS",null,'assets/chest3.png');
                 chest2.open();
             };
             let chest3 = new Chest(0.2, -0.0, 0.0);
             chest3.collisionAction = () => {
-                dialog("YOU FOUND A LETTER FROM CHICKA MI AMOR:", () => { dialog('"HELP ME PEDRO!"<Selena Gomez>'); });
+                dialogBlocking("YOU FOUND A LETTER FROM CHICKA MI AMOR:", () => { dialogBlocking('"HELP ME PEDRO!"<Selena Gomez>',null,'assets/selena.png'); },'assets/chest3.png');
                 chest3.open();
             };
             let portal = new Portal(0.0, 0.2 + sz * 2, 0.0);
             portal.collisionAction = () => {
                 protagonist.animation = "blink";
                 controlsEnabled = false;
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level2();
-                    });
+                    },
+                    'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
             let npc = new NPC(0, -0.35, 0, `"I think Grump took her to prison. Be careful of your enemies and of the booby traps."`);
-
 
             let sw = new Switch(0.0, 0.2, 0.0);
             let oldCollisionAction = sw.collisionAction.bind(sw);
@@ -197,16 +200,16 @@
             bullet.lifetime = 2000;
             bullet.collisionAction = () => {
                 die();
-                dialog("YOU STEPPED ON DIRTY NEEDLE", () => {
-                    dialog("NOW YOU ARE HIV POSITIVE AND GAY!");
-                });
+                dialogBlocking("YOU STEPPED ON DIRTY NEEDLE", () => {
+                    dialogBlocking("NOW YOU ARE HIV POSITIVE AND GAY!",null,'assets/syringe_down.png');
+                },'assets/syringe_down.png');
                 bullet.dy = 0;
                 bullet.dx = 0;
             }
 
             let chest = new Chest(2.0, -0.2, 0.0);
             chest.collisionAction = () => {
-                dialog("YOU FOUND THE COCAINA (SPEED BUFF)");
+                dialogBlocking("YOU FOUND THE COCAINA (SPEED BUFF)",null,'assets/chest3.png');
                 protagonist.speed = 2.0;
                 chest.open();
             };
@@ -215,11 +218,11 @@
             portal.collisionAction = () => {
                 protagonist.animation = "blink";
                 controlsEnabled = false;
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level3();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -257,11 +260,11 @@
             portal.collisionAction = () => {
                 protagonist.animation = "blink";
                 controlsEnabled = false;
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level4();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -270,7 +273,7 @@
             this.drawables = [...bricks, dea];
             this.movers = [dea];
             dea.dying = () => {
-                dialog("CONGRATS. YOUR FIRST KILL! CARTEL PRESTIGE GOES UP");
+                dialogBlocking("CONGRATS. YOUR FIRST KILL! CARTEL PRESTIGE GOES UP",null,'assets/dea.png');
                 this.colliders.push(portal);
                 this.drawables.push(portal);
             };
@@ -283,11 +286,11 @@
             portal.collisionAction = () => {
                 protagonist.animation = "blink";
                 controlsEnabled = false;
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level5();
-                    });
+                    }, 'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -311,7 +314,7 @@
                     dea.dy = 0.0001 * dt * Math.sin(angle);
                 };
                 dea.dying = () => {
-                    dialog(`${--enemyCount} enemies left`);
+                    dialog(`${--enemyCount} enemies left`,null,'assets/dea.png');
                     if (enemyCount === 0) {
                         this.drawables.push(portal);
                         this.colliders.push(portal);
@@ -366,17 +369,17 @@
             ports[ports.length - 1].collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level6();
-                    });
+                    }, 'assets/portal.png');
                 ports[ports.length - 1].collisionAction = () => { };
             };
 
             let chest = new Chest(-sz * 8, -sz * 8, 0.0);
             chest.collisionAction = () => {
-                dialog("YOU FOUND THE SHROOMS (STRENGTH BUFF)");
+                dialogBlocking("YOU FOUND THE SHROOMS (STRENGTH BUFF)",null,'assets/chest3.png');
                 protagonist.strength += 1;
                 chest.open();
             };
@@ -390,19 +393,19 @@
         function Level6() {
             Object.assign(this, initLevel());
 
-            dialog(`"It is here that you die"`, () => {
-                dialog(`"The big booty latina, Selena Gomez, is ours. Mouhahaha!"`);
-            });
+            dialogBlocking(`"It is here that you die"`, () => {
+                dialogBlocking(`"The big booty latina, Selena Gomez, is ours. Mouhahaha!"`,null,'assets/dea.png');
+            },'assets/dea.png');
 
             let portal = new Portal(0.0, -32 * sz, 0.0);
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level7();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -468,11 +471,11 @@
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level8();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -481,7 +484,7 @@
             let oldCollisionAction = npc.collisionAction.bind(npc);
             npc.collisionAction = () => {
                 if (collectables['leaf'] && collectables['leaf'] >= n) {
-                    dialog(`"Thank you very much. Here is the exit"`);
+                    dialogBlocking(`"Thank you very much. Here is the exit"`,null,'assets/npc.png');
                     this.colliders.push(portal);
                     this.drawables.push(portal);
                     npc.collisionAction = () => {};
@@ -510,11 +513,11 @@
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level9();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
             let ices = (()=>{
@@ -525,7 +528,7 @@
                     let ice = new ICE(Math.cos(da*i)*0.7, Math.sin(da*i)*0.7, 0);
                     ice.reloadTime = 2000;
                     ice.dying = () => {
-                        dialog(`${--n} enemies left`);
+                        dialog(`${--n} enemies left`,null,'assets/ice.png');
                         if(n === 0) {
                             this.drawables.push(portal);
                             this.colliders.push(portal);
@@ -547,7 +550,7 @@
                                 this.movers.push(bubble);
                                 bubble.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY I.C.E.");
+                                    dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
                                     bubble.dy = 0;
                                     bubble.dx = 0;
                                };
@@ -569,18 +572,18 @@
             let chest = new Chest(0, sz*16, 0.0);
             chest.collisionAction = () => {
                 protagonist.weapon = "double";
-                dialog("YOU FOUND THE DOUBLE BARRELED GUN");
+                dialogBlocking("YOU FOUND THE DOUBLE BARRELED GUN",null,'assets/chest3.png');
                 chest.open();
             };
             let portal = new Portal(0.0,-sz*12,0.0);
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level10();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
             let movingBrick = (upper,right,lower,left,x,y,reverse)=>{
@@ -762,19 +765,19 @@
         function Level10() {
             Object.assign(this, initLevel());
 
-            dialog(`"D.O.G.E. told me all about you."`, () => {
-                dialog(`"You are a fool. Prepare to die!"`);
-            });
+            dialogBlocking(`"D.O.G.E. told me all about you."`, () => {
+                dialogBlocking(`"You are a fool. Prepare to die!"`,null,'assets/ice.png');
+            },'assets/ice.png');
 
             let portal = new Portal(0.0, -32 * sz, 0.0);
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level11();
-                    });
+                    }, 'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -820,7 +823,7 @@
                                 this.movers.push(bubble);
                                 bubble.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY I.C.E.");
+                                    dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
                                     bubble.dy = 0;
                                     bubble.dx = 0;
                                };
@@ -865,11 +868,11 @@
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level12();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
             let n = 2;
@@ -880,7 +883,7 @@
             let y = Math.sin(angle) * sz * (10);
             let doge = new DOGE(x, y, 0);
             doge.dying = () => {
-                dialog(`${--n} enemies left`);
+                dialog(`${--n} enemies left`,null,'assets/doge.png');
                 if(n === 0){
                   this.drawables.push(portal);
                   this.colliders.push(portal);
@@ -904,7 +907,7 @@
                                 this.movers.push(bubble);
                                 bubble.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY D.O.G.E.");
+                                    dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                                     bubble.dy = 0;
                                     bubble.dx = 0;
                                 };
@@ -935,13 +938,13 @@
 
                                 newBubble.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY D.O.G.E.");
+                                    dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                                     newBubble.dy = 0;
                                     newBubble.dx = 0;
                                 };
                                 newBubble2.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY D.O.G.E.");
+                                    dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                                     newBubble2.dy = 0;
                                     newBubble2.dx = 0;
                                 };
@@ -984,19 +987,19 @@
         function Level12() {
             Object.assign(this, initLevel());
 
-            dialog(`"Grump put me in charge."`, () => {
-                dialog(`"I am in charge of killing you!"`);
-            });
+            dialogBlocking(`"Grump put me in charge."`, () => {
+                dialogBlocking(`"I am in charge of killing you!"`,null,'assets/doge.png');
+            },'assets/doge.png');
 
             let portal = new Portal(0.0, -32 * sz, 0.0);
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new Level13();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 
@@ -1043,7 +1046,7 @@
                                 this.movers.push(bubble);
                                 bubble.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY D.O.G.E.");
+                                    dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                                     bubble.dy = 0;
                                     bubble.dx = 0;
                                 };
@@ -1074,13 +1077,13 @@
 
                                 newBubble.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY D.O.G.E.");
+                                    dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                                     newBubble.dy = 0;
                                     newBubble.dx = 0;
                                 };
                                 newBubble2.collisionAction = () => {
                                     die();
-                                    dialog("YOU WERE CAUGHT BY D.O.G.E.");
+                                    dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                                     newBubble2.dy = 0;
                                     newBubble2.dx = 0;
                                 };
@@ -1133,20 +1136,20 @@
             Object.assign(this, initLevel());
 
 
-            dialog(`"I am Grump."`, () => {
-                dialog(`"I will make your nightmares great again!"`);
-            });
+            dialogBlocking(`"I am Grump."`, () => {
+                dialogBlocking(`"I will make your nightmares great again!"`,null,'assets/grump.png');
+            },'assets/grump.png');
 
 
             let portal = new Portal(0.0, -32 * sz, 0.0);
             portal.collisionAction = () => {
                 controlsEnabled = false;
                 protagonist.animation = "blink";
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new LevelEnding();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
  
@@ -1225,7 +1228,7 @@
                       
                       bubble.collisionAction = ()=>{
                       	die();
-                          dialog("YOU WERE CAUGHT BY THE EVIL EYE");
+                          dialog("YOU WERE CAUGHT BY THE EVIL EYE",null,'assets/eye.png');
                       };
                       level.drawables.push(bubble);
                       level.colliders.push(bubble);
@@ -1267,7 +1270,7 @@
                             bubble.dy = Math.sin(angle) * dt * 0.0003;
                         };
                         bubble.collisionAction = () => {
-                            dialog("YOU WERE CAUGHT BY GRUMP. NO HAPPY ENDING");
+                            dialog("YOU WERE CAUGHT BY GRUMP. NO HAPPY ENDING",null,'assets/grump.png');
                             die();
                             bubble.dy = 0;
                             bubble.dx = 0;
@@ -1336,11 +1339,11 @@
             portal.collisionAction = () => {
                 protagonist.animation = "blink";
                 controlsEnabled = false;
-                dialog("YOU FOUND THE EXIT",
+                dialogBlocking("YOU FOUND THE EXIT",
                     () => {
                         protagonist.animation = "idle";
                         level = new LevelCredits();
-                    });
+                    },'assets/portal.png');
                 portal.collisionAction = () => { };
             };
 

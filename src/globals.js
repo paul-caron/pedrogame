@@ -118,11 +118,41 @@ const getVertices = (size, offsetU = 0, offsetV = 0, div = 1) => {
 };
 
 
-function dialog(text, callback = () => { }) {
+function dialog(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
     const dialogBox = document.getElementById('dialogBox');
-    dialogBox.innerText = text;
+    const dialogText = document.getElementById('dialogText');
+    const avatar = document.getElementById('dialogAvatar');
+    dialogBox.style.display = 'block';
+    avatar.style.borderImage= `url(assets/border2.png) 8 / 32`;
+    dialogBox.style.backgroundImage= 'url(assets/fogofwar.png)';
+    dialogBox.style.borderImage= `url(assets/border.png) 14 / 32`;
+    avatar.src = avatarSrc;
+    dialogText.innerText = text;
     setTimeout(() => {
-        dialogBox.innerText = "";
+        dialogText.innerText = "";
+        avatar.src = "";
+        dialogBox.style.display = 'none';
+        callback();
+    },
+    3000);
+}
+
+function dialogBlocking(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
+    const dialogBox = document.getElementById('dialogBox');
+    const dialogText = document.getElementById('dialogText');
+    const avatar = document.getElementById('dialogAvatar');
+    controlsEnabled = false;
+    avatar.style.borderImage= `url(assets/border2.png) 8 / 32`;
+    dialogBox.style.backgroundImage= 'url(assets/fogofwar.png)';
+    dialogBox.style.borderImage= `url(assets/border.png) 14 / 32`;
+    dialogBox.style.display = 'block';
+    avatar.src = avatarSrc;
+    dialogText.innerText = text;
+    setTimeout(() => {
+        dialogText.innerText = "";
+        avatar.src = "";
+        dialogBox.style.display = 'none';
+        controlsEnabled = true;
         callback();
     },
     3000);

@@ -3,7 +3,25 @@
             margin: 0;
         }
 
+        #dialogAvatar{
+            margin-top: 1em;
+            height: 10vh;
+            border-style: solid;
+            border-image: url(assets/border.png) 16 / 32;
+        }
+
+        #dialogText{
+            white-space: pre-wrap;
+        }
+
         #dialogBox {
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center top; 
+            background-size: cover;
+            border-style: solid;
+
+            display: none;
             width: 100%;
             text-align: center;
             text-shadow: -2px 2px 0px black, 2px 2px 0px black,
@@ -14,7 +32,7 @@
             z-index: 2;
             position: fixed;
             left: 0px;
-            top: 2em;
+            top: 0em;
             white-space: pre-wrap;
         }
 
