@@ -138,7 +138,7 @@
             };
             let chest3 = new Chest(0.2, -0.0, 0.0);
             chest3.collisionAction = () => {
-                dialogBlocking("YOU FOUND A LETTER FROM CHICKA MI AMOR:", () => { dialogBlocking('"HELP ME PEDRO!"<Selena Gomez>',null,'assets/selena.png'); },'assets/chest3.png');
+                dialogBlocking("YOU FOUND A LETTER FROM CHICKA MI AMOR:", () => { dialogBlocking('"Help me Pedro!"<Selena Gomez>',null,'assets/selena.png'); },'assets/chest3.png');
                 chest3.open();
             };
             let portal = new Portal(0.0, 0.2 + sz * 2, 0.0);

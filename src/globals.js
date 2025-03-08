@@ -1,4 +1,5 @@
 // Globals
+let dialogTimeoutId;
 let canvas;
 let level;
 let protagonist;
@@ -120,6 +121,7 @@ const getVertices = (size, offsetU = 0, offsetV = 0, div = 1) => {
 
 
 function dialog(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
+    clearTimeout(dialogTimeoutId);
     if(!callback) callback =()=>{};
     const dialogBox = document.getElementById('dialogBox');
     const dialogText = document.getElementById('dialogText');
@@ -130,16 +132,17 @@ function dialog(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
     dialogBox.style.borderImage= `url(assets/border.png) 14 / 32`;
     avatar.src = avatarSrc;
     dialogText.innerText = text;
-    setTimeout(() => {
+    dialogTimeoutId = setTimeout(() => {
         dialogText.innerText = "";
         avatar.src = "";
         dialogBox.style.display = 'none';
         callback();
     },
-    3000);
+    2000);
 }
 
 function dialogBlocking(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
+    clearTimeout(dialogTimeoutId);
     if(!callback) callback =()=>{};
     const dialogBox = document.getElementById('dialogBox');
     const dialogText = document.getElementById('dialogText');
@@ -151,7 +154,7 @@ function dialogBlocking(text, callback = () => { }, avatarSrc = "assets/pedro.pn
     dialogBox.style.display = 'block';
     avatar.src = avatarSrc;
     dialogText.innerText = text;
-    setTimeout(() => {
+    dialogTimeoutId = setTimeout(() => {
         dialogText.innerText = "";
         avatar.src = "";
         dialogBox.style.display = 'none';

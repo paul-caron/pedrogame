@@ -1,6 +1,9 @@
-        body {
+        *,:root {
             user-select: none;
             margin: 0;
+            padding: 0;
+            border: none;
+            box-sizing: border-box;
         }
 
         #dialogAvatar{
