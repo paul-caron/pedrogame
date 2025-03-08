@@ -100,7 +100,7 @@ class Char extends Drawable{
         ',':{row:5,col:11},
         '!':{row:5,col:12},
     };
-    constructor(char, x, y, z){
+    constructor(char, sz, x, y, z){
         let {row,col} = Char.charMap[char];
         let vertices = new Float32Array([
             -sz/2, sz, 0.0, (0.0+col)/16,(1.0+row)/8,
@@ -338,7 +338,17 @@ class Enemy extends Drawable {
                 }
                 return results;
             })(20);
-            level.drawables.push(shard1,shard2,shard3,shard4,...particles);
+
+            let chars = (()=>{
+                let results = [];
+                ['f','u','c','k','!'].forEach((letter,index,arr)=>{
+                    let char = new Char(letter, sz/2, this.x + (1+index-arr.length/2)*sz/2, this.y - this.halfWidth*2, this.z);
+                    Object.assign(char,Doomed);
+                    results.push(char);
+                });
+                return results;
+            })();
+            level.drawables.push(shard1,shard2,shard3,shard4,...particles, ...chars);
             level.movers.push(shard1,shard2,shard3,shard4,...particles);
         };
     }
