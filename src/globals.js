@@ -9,6 +9,7 @@ let audios = ["#fmtechno", "#hardgroove", "#dorienigm", "#mom"];
 let audioIndex = 2;
 let audio = document.querySelector(audios[audioIndex]);
 let gl;
+let textureImages = [];
 let program;  //textures
 let program2; //lines
 let textures;
@@ -119,6 +120,7 @@ const getVertices = (size, offsetU = 0, offsetV = 0, div = 1) => {
 
 
 function dialog(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
+    if(!callback) callback =()=>{};
     const dialogBox = document.getElementById('dialogBox');
     const dialogText = document.getElementById('dialogText');
     const avatar = document.getElementById('dialogAvatar');
@@ -138,6 +140,7 @@ function dialog(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
 }
 
 function dialogBlocking(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
+    if(!callback) callback =()=>{};
     const dialogBox = document.getElementById('dialogBox');
     const dialogText = document.getElementById('dialogText');
     const avatar = document.getElementById('dialogAvatar');
