@@ -6,7 +6,7 @@ let canvas;
 let level;
 let protagonist;
 let background;
-let foreground;
+let framebuffer;
 let bullets;
 let audios = ["#fmtechno", "#hardgroove", "#dorienigm", "#mom"];
 let audioIndex = 2;

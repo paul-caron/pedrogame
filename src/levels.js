@@ -116,9 +116,6 @@
 
         function Level1() {
             Object.assign(this, initLevel());
-            protagonist = new Protagonist();
-            background = new Drawable([0], backgroundVertices);
-            foreground = new Foreground();
 
             dialogBlocking("USE ARROW KEYS TO MOVE AROUND",
                 () => { dialogBlocking("SPACE BAR FOR ATTACK") });

@@ -58,11 +58,36 @@ class Drawable {
     }
 };
 
-class Foreground {
+class Framebuffer {
     constructor() {
         this.vertices = backgroundVertices;
+        this.framebuffer = gl.createFramebuffer();
+        this.framebuffer.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.framebuffer.texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     }
-    draw(dt) { // delta time from previous render
+    resize(){
+        this.framebuffer.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.framebuffer.texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    bind(){
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.framebuffer.texture, 0);
+    }
+    unbind(){
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+    draw(dt) {
         gl.useProgram(program3);
         ////////////
         gl.bindBuffer(gl.ARRAY_BUFFER, program3.positionBuffer);
@@ -71,7 +96,7 @@ class Foreground {
         gl.vertexAttribPointer(program3.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
         gl.enableVertexAttribArray(program3.texCoordLocation);
         //////////
-        gl.bindTexture(gl.TEXTURE_2D, frameBufferTexture);
+        gl.bindTexture(gl.TEXTURE_2D, this.framebuffer.texture);
         gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
