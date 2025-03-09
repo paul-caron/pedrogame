@@ -51,6 +51,17 @@ async function start(){ try {
 
             if(!dt || dt > 32 || dt < 10 || protagonist.dead){}
             else{
+
+
+
+                //bind framebuffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+
+                //attach texture to framebuffer
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameBufferTexture, 0);
+
+
+
                     // RESET SCREEN
                     gl.viewport(0, 0, canvas.width, canvas.height);
                     if (level.transitionProgress < 1.0) level.transitionProgress += 0.01;
@@ -174,7 +185,16 @@ async function start(){ try {
                         }
 
                     }//end if control enabled
-                    foreground.draw(dt);
+
+
+                //detach texture from framebuffer
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+
+                //unbind framebuffer
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+                //draw the framebuffer's content
+                foreground.draw(dt);
             }
 
             // LOOP AGAIN

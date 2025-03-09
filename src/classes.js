@@ -58,6 +58,25 @@ class Drawable {
     }
 };
 
+class Foreground {
+    constructor() {
+        this.vertices = backgroundVertices;
+    }
+    draw(dt) { // delta time from previous render
+        gl.useProgram(program3);
+        ////////////
+        gl.bindBuffer(gl.ARRAY_BUFFER, program3.positionBuffer);
+        gl.vertexAttribPointer(program3.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
+        gl.enableVertexAttribArray(program3.positionLocation);
+        gl.vertexAttribPointer(program3.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        gl.enableVertexAttribArray(program3.texCoordLocation);
+        //////////
+        gl.bindTexture(gl.TEXTURE_2D, frameBufferTexture);
+        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+};
+
 class Char extends Drawable{
     static charMap = {
         a:{row:7,col:0},

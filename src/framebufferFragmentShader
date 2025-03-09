@@ -1,0 +1,29 @@
+precision mediump float;
+varying vec2 v_texCoord;
+uniform sampler2D u_texture;
+
+void main() {
+
+    ////////////////////////////////////////////////////
+
+    //standard, no effect
+    //gl_FragColor = texture2D(u_texture, v_texCoord);
+
+    ////////////////////////////////////////////////////
+
+    //gray scale effect
+    //vec4 c = texture2D(u_texture, v_texCoord);
+    //float average = (c.r + c.g + c.b)/3.0;
+    //gl_FragColor = vec4(average,average,average,1.0);
+
+    ////////////////////////////////////////////////////
+
+    //fog of war effect
+    vec4 c = texture2D(u_texture, v_texCoord);
+    float x = v_texCoord.x - 0.5;
+    float y = v_texCoord.y - 0.5;
+    float h = sqrt(x*x + y*y);
+    gl_FragColor = mix(c, vec4(0.,0.,0.,1.), h*2.0);
+    ///////////////////////////////////////////////////
+
+}

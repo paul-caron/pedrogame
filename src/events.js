@@ -10,11 +10,9 @@ function initEvents(){
 
     window.addEventListener('keydown', (event) => {
         event.preventDefault();
-//        if(protagonist.isCharging) return; //dont move when charging
         keys[event.key] = true;
         if (event.key === " "){
           protagonist.isCharging = true;
-  //        keys = {}; //dump all key presses, dont move when charging
         }
     });
 
@@ -24,6 +22,39 @@ function initEvents(){
         height = window.innerHeight;
         canvas.width = width;
         canvas.height = height;
+
+        //RESIZING THE FRAMEBUFFER TEXTURE
+        //bind framebuffer texture
+        gl.bindTexture(gl.TEXTURE_2D, frameBufferTexture);
+
+        gl.texImage2D(
+        // Always gl.TEXTURE_2D for a 2D texture.
+        gl.TEXTURE_2D,
+        // Mipmap level.  Always 0.
+        0,
+        // Internal format of each pixel.  Here we want an RGBA texture.
+        gl.RGBA,
+        // Width of the texture.
+        width,
+        // Height of the texture.
+        height,
+        // Width of the border of the texture.  Always 0.
+        0,
+        // The pixel format of the data that is going to be uploaded to the GPU.
+        // We have no data here, so use something that matches the internal format.
+        gl.RGBA,
+        // The type of each component of the pixel that is going to be uploaded.
+        // Here we want a floating point texture.
+        gl.UNSIGNED_BYTE,
+        // The data that is going to be uploaded.
+        // We don't have any data, so we give null.
+        // WebGL will just allocate the texture and leave it blank.
+        null
+        );
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     });
 
     canvas.addEventListener('touchstart', (event) => { event.preventDefault(); document.querySelector("#buttons").style.visibility = "visible"; });

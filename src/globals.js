@@ -1,4 +1,6 @@
 // Globals
+let frameBuffer;
+let frameBufferTexture;
 let dialogTimeoutId;
 let canvas;
 let level;
@@ -13,6 +15,7 @@ let gl;
 let textureImages = [];
 let program;  //textures
 let program2; //lines
+let program3; //framebuffer
 let textures;
 let zoomFactor = 1.25;
 let worldOffsetX = 0;

@@ -57,6 +57,14 @@ async function initWebGL(){
         const fsfetch2 = await fetch("src/lineFragmentShader");
         const fragmentShaderSource2 = await fsfetch2.text();
 
+        // Vertex shader program
+        const vsfetch3 = await fetch("src/framebufferVertexShader");
+        const vertexShaderSource3 = await vsfetch3.text();
+
+        // Fragment shader program
+        const fsfetch3 = await fetch("src/framebufferFragmentShader");
+        const fragmentShaderSource3 = await fsfetch3.text();
+
         // Shader compilation and linking utility functions
         function compileShader(source, type) {
             const shader = gl.createShader(type);
@@ -88,6 +96,10 @@ async function initWebGL(){
         const fragmentShader2 = compileShader(fragmentShaderSource2, gl.FRAGMENT_SHADER);
         program2 = createProgram(vertexShader2, fragmentShader2);
 
+        const vertexShader3 = compileShader(vertexShaderSource3, gl.VERTEX_SHADER);
+        const fragmentShader3 = compileShader(fragmentShaderSource3, gl.FRAGMENT_SHADER);
+        program3 = createProgram(vertexShader3, fragmentShader3);
+
         // Get locations of the attributes and uniforms
         program.positionLocation = gl.getAttribLocation(program, "a_position");
         program.texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
@@ -103,6 +115,9 @@ async function initWebGL(){
         program2.aspectRatioLocation = gl.getUniformLocation(program2, "u_aspectRatio");
         program2.zoomFactorLocation = gl.getUniformLocation(program2, "u_zoomFactor");
 
+        program3.positionLocation = gl.getAttribLocation(program3, "a_position");
+        program3.texCoordLocation = gl.getAttribLocation(program3, "a_texCoord");
+        program3.textureLocation = gl.getUniformLocation(program3, "u_texture");
         // Create buffer and load data
         program.positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
@@ -118,6 +133,13 @@ async function initWebGL(){
         gl.vertexAttribPointer(program2.colorLocation, 4, gl.FLOAT, false, 7 * 4, 3 * 4);
         gl.enableVertexAttribArray(program2.colorLocation);
 
+        program3.positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, program3.positionBuffer);
+        gl.vertexAttribPointer(program3.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
+        gl.enableVertexAttribArray(program3.positionLocation);
+        gl.vertexAttribPointer(program3.texCoordLocation, 2, gl.FLOAT, false, 5 * 4, 3 * 4);
+        gl.enableVertexAttribArray(program3.texCoordLocation);
+
         // Create the textures
         textures = textureImages.map((img) => {
             let texture = gl.createTexture();
@@ -131,7 +153,15 @@ async function initWebGL(){
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             return texture;
         });
+
+
+
     };
+
+
+
+
+
 
     // WebGL Rendering Settings
 //    gl.enable(gl.DEPTH_TEST);
@@ -142,4 +172,55 @@ async function initWebGL(){
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 //    gl.clearDepth(0.0);
 
+        //framebuffer
+        frameBuffer = gl.createFramebuffer();
+        frameBufferTexture = gl.createTexture();
+
+        //bind framebuffer texture
+        gl.bindTexture(gl.TEXTURE_2D, frameBufferTexture);
+
+        gl.texImage2D(
+        // Always gl.TEXTURE_2D for a 2D texture.
+        gl.TEXTURE_2D,
+        // Mipmap level.  Always 0.
+        0,
+        // Internal format of each pixel.  Here we want an RGBA texture.
+        gl.RGBA,
+        // Width of the texture.
+        width,
+        // Height of the texture.
+        height,
+        // Width of the border of the texture.  Always 0.
+        0,
+        // The pixel format of the data that is going to be uploaded to the GPU.
+        // We have no data here, so use something that matches the internal format.
+        gl.RGBA,
+        // The type of each component of the pixel that is going to be uploaded.
+        // Here we want a floating point texture.
+        gl.UNSIGNED_BYTE,
+        // The data that is going to be uploaded.
+        // We don't have any data, so we give null.
+        // WebGL will just allocate the texture and leave it blank.
+        null
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+        //framebuffer steps
+        //bind framebuffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+
+        //attach texture to framebuffer
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameBufferTexture, 0);
+
+        // ...draw some stuff...
+
+        //detach texture from framebuffer
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, null, 0);
+        //unbind framebuffer
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // ...use the texture in another program draw
 }
