@@ -10,7 +10,7 @@
             margin-top: 1em;
             height: 10vh;
             border-style: solid;
-            border-image: url(assets/border.png) 16 / 32;
+            border-image: url(/assets/border2.png) 8 / 32;
         }
 
         #dialogText{
@@ -19,6 +19,8 @@
         }
 
         #dialogBox {
+            background-image: url(/assets/fogofwar.png);
+            border-image: url(/assets/border.png) 14 / 32;
             background-repeat: no-repeat;
             background-attachment: fixed;
             background-position: center top; 

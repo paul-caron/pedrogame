@@ -127,9 +127,6 @@ function dialog(text, callback = () => { }, avatarSrc = "assets/pedro.png") {
     const dialogText = document.getElementById('dialogText');
     const avatar = document.getElementById('dialogAvatar');
     dialogBox.style.display = 'block';
-    avatar.style.borderImage= `url(assets/border2.png) 8 / 32`;
-    dialogBox.style.backgroundImage= 'url(assets/fogofwar.png)';
-    dialogBox.style.borderImage= `url(assets/border.png) 14 / 32`;
     avatar.src = avatarSrc;
     dialogText.innerText = text;
     dialogTimeoutId = setTimeout(() => {
@@ -146,11 +143,11 @@ function dialogBlocking(text, callback = () => { }, avatarSrc = "assets/pedro.pn
     if(!callback) callback =()=>{};
     const dialogBox = document.getElementById('dialogBox');
     const dialogText = document.getElementById('dialogText');
-    const avatar = document.getElementById('dialogAvatar');
+    let avatar = document.getElementById('dialogAvatar');
+//    avatar = textureImages[textureURLs.indexOf(avatarSrc)];
+//    avatar.id = 'dialogAvatar';
+    avatar.src = avatarSrc;
     controlsEnabled = false;
-    avatar.style.borderImage= `url(assets/border2.png) 8 / 32`;
-    dialogBox.style.backgroundImage= 'url(assets/fogofwar.png)';
-    dialogBox.style.borderImage= `url(assets/border.png) 14 / 32`;
     dialogBox.style.display = 'block';
     avatar.src = avatarSrc;
     dialogText.innerText = text;

@@ -54,7 +54,8 @@ async function start(){ try {
                     // RESET SCREEN
                     gl.viewport(0, 0, canvas.width, canvas.height);
                     if (level.transitionProgress < 1.0) level.transitionProgress += 0.01;
-                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+//                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                    gl.clear(gl.COLOR_BUFFER_BIT);
                     gl.scissor((canvas.width * (1 - level.transitionProgress)) / 2, (canvas.height * (1 - level.transitionProgress)) / 2, canvas.width * level.transitionProgress, canvas.height * level.transitionProgress);
 
                     // BACKGROUND DRAW
@@ -96,6 +97,7 @@ async function start(){ try {
                                 let x = (Math.max(e.x - e.halfWidth, b.x-b.halfWidth)+Math.min(e.x+e.halfWidth, b.x+b.halfWidth))/2;
                                 let y = (Math.max(e.y - e.halfWidth, b.y-b.halfWidth)+Math.min(e.y+e.halfWidth, b.y+b.halfWidth))/2;
                                 let blood = new BloodParticle(x, y);
+                                blood.lifetime = 500;
                                 level.drawables.push(blood);
                                 level.movers.push(blood);
                                 blood.updateDxy = (dt) => {
