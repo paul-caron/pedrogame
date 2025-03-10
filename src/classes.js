@@ -60,6 +60,7 @@ class Drawable {
 
 class Framebuffer {
     constructor() {
+        this.time = 0;
         this.vertices = backgroundVertices;
         this.framebuffer = gl.createFramebuffer();
         this.framebuffer.texture = gl.createTexture();
@@ -69,6 +70,7 @@ class Framebuffer {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        this.option = 0;
     }
     resize(){
         this.framebuffer.texture = gl.createTexture();
@@ -88,8 +90,12 @@ class Framebuffer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
     draw(dt) {
+        this.time += dt;
         gl.useProgram(program3);
         ////////////
+        gl.uniform1f(program3.timeLocation, this.time);
+        gl.uniform1i(program3.optionLocation, this.option);
+        /////
         gl.bindBuffer(gl.ARRAY_BUFFER, program3.positionBuffer);
         gl.vertexAttribPointer(program3.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);
         gl.enableVertexAttribArray(program3.positionLocation);

@@ -1,29 +1,76 @@
-precision mediump float;
+precision highp float;
 varying vec2 v_texCoord;
 uniform sampler2D u_texture;
+uniform float u_time;
+uniform int u_option;
 
 void main() {
 
-    ////////////////////////////////////////////////////
+    if(u_option == 0){
+        // standard, no effect
+        gl_FragColor = texture2D(u_texture, v_texCoord);
+    }
 
-    //standard, no effect
-    //gl_FragColor = texture2D(u_texture, v_texCoord);
+    else if(u_option == 1){
+      //gray scale effect
+      vec4 c = texture2D(u_texture, v_texCoord);
+      float average = (c.r + c.g + c.b)/3.0;
+      gl_FragColor = vec4(average,average,average,1.0);
+    }
 
-    ////////////////////////////////////////////////////
+    else if(u_option == 2){
+       //fog of war effect
+       vec4 c = texture2D(u_texture, v_texCoord);
+       float x = v_texCoord.x - 0.5;
+       float y = v_texCoord.y - 0.5;
+       float h = sqrt(x*x + y*y);
+       gl_FragColor = mix(c, vec4(0.,0.,0.,1.), h*2.0);
+    }
 
-    //gray scale effect
-    //vec4 c = texture2D(u_texture, v_texCoord);
-    //float average = (c.r + c.g + c.b)/3.0;
-    //gl_FragColor = vec4(average,average,average,1.0);
+    else if(u_option == 3){
+        //spiral effect
+        vec4 c = texture2D(u_texture, v_texCoord);
+        float x = v_texCoord.x - 0.5;
+        float y = v_texCoord.y - 0.5;
+        float h = sqrt(x*x + y*y);
+        float angle = mod(atan(y,x) + u_time * 0.01, 3.1415*2.0);
+        float a = 0.01;
+        float b = 0.1;
+        float spiralRadius = a + b * angle;
+        float distanceToSpiral = abs(h - spiralRadius);
+        float color = smoothstep(0.1, 0.2, distanceToSpiral);
+        gl_FragColor = vec4((c.rgb+vec3(color))/2.0,1.0);
+    }    
+    else if(u_option == 4){
+      //motion sickness effect
+      float s = 0.1;//shake intensity
+      float x = mod(v_texCoord.x + s*cos(u_time/1000.0),1.0);
+      float y = mod(v_texCoord.y + s*sin(u_time/1000.0),1.0);
+      gl_FragColor = texture2D(u_texture, vec2(x,y));
+    }
+    else if(u_option == 5){
+      //reverse
+      vec4 color = texture2D(u_texture, v_texCoord); 
+      gl_FragColor = vec4(vec3(1.0-color.r,1.0-color.g,1.0-color.b),1.0);
+    }
+    else if(u_option == 6){
+      ///wavy
+      const float SPEED = 2.0;      // Adjust for slower/faster transitions
+      const float AMPLITUDE = 10.0; // Adjust for smaller/larger distortions
 
-    ////////////////////////////////////////////////////
+      // Need a new variable since 'varying' variables cannot be modified
+      vec2 newTc = v_texCoord;
+      float dy = cos(newTc.x + u_time/100.0) / 2000.0;
+      float dx = cos(newTc.y + u_time/100.0) / 2000.0;
+      newTc.x += AMPLITUDE * sin(SPEED * u_time/100.0) * dx;
+      newTc.y += AMPLITUDE * sin(SPEED * u_time/100.0) * dy;
+      gl_FragColor = texture2D(u_texture, newTc);
+    }
+    else{
+        // standard, no effect
+        gl_FragColor = texture2D(u_texture, v_texCoord);
+    }
 
-    //fog of war effect
-    vec4 c = texture2D(u_texture, v_texCoord);
-    float x = v_texCoord.x - 0.5;
-    float y = v_texCoord.y - 0.5;
-    float h = sqrt(x*x + y*y);
-    gl_FragColor = mix(c, vec4(0.,0.,0.,1.), h*2.0);
-    ///////////////////////////////////////////////////
+
 
 }

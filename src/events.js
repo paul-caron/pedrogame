@@ -14,6 +14,10 @@ function initEvents(){
         if (event.key === " "){
           protagonist.isCharging = true;
         }
+        if (Number.parseInt(event.key)){
+          console.log(event.key);
+          framebuffer.option = Number(event.key);
+        }
     });
 
     window.addEventListener('resize', (event) => {

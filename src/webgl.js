@@ -118,6 +118,9 @@ async function initWebGL(){
         program3.positionLocation = gl.getAttribLocation(program3, "a_position");
         program3.texCoordLocation = gl.getAttribLocation(program3, "a_texCoord");
         program3.textureLocation = gl.getUniformLocation(program3, "u_texture");
+        program3.timeLocation = gl.getUniformLocation(program3, "u_time");
+        program3.optionLocation = gl.getUniformLocation(program3, "u_option");
+
         // Create buffer and load data
         program.positionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, program.positionBuffer);
