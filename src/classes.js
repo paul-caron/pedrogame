@@ -95,6 +95,8 @@ class Framebuffer {
         ////////////
         gl.uniform1f(program3.timeLocation, this.time);
         gl.uniform1i(program3.optionLocation, this.option);
+        gl.uniform1f(program3.widthLocation, canvas.width);
+        gl.uniform1f(program3.heightLocation, canvas.height);
         /////
         gl.bindBuffer(gl.ARRAY_BUFFER, program3.positionBuffer);
         gl.vertexAttribPointer(program3.positionLocation, 3, gl.FLOAT, false, 5 * 4, 0);

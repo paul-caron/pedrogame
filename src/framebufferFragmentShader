@@ -2,7 +2,9 @@ precision highp float;
 varying vec2 v_texCoord;
 uniform sampler2D u_texture;
 uniform float u_time;
-uniform int u_option;
+uniform int u_option; //effect option
+uniform float u_width; //screen width in pixels
+uniform float u_height; //screen height in pixels
 
 void main() {
 
@@ -53,7 +55,6 @@ void main() {
       const float SPEED = 2.0;      // Adjust for slower/faster transitions
       const float AMPLITUDE = 10.0; // Adjust for smaller/larger distortions
 
-      // Need a new variable since 'varying' variables cannot be modified
       vec2 newTc = v_texCoord;
       float dy = cos(newTc.x + u_time/100.0) / 2000.0;
       float dx = cos(newTc.y + u_time/100.0) / 2000.0;
@@ -67,6 +68,72 @@ void main() {
       float dy = 0.0030;
       vec2 coord = vec2(dx * floor(v_texCoord.x/dx), dy*floor(v_texCoord.y/dy));
       gl_FragColor = texture2D(u_texture, coord);
+    }
+    else if(u_option == 7){
+
+        //box blur effect
+
+        float dx = 1.0 / u_width;
+        float dy = 1.0 / u_height;
+
+        vec2 bl = v_texCoord - vec2(dx, dy); // bottom-left
+        vec2 tr = v_texCoord + vec2(dx, dy); // top-right
+        vec2 br = v_texCoord - vec2(dx,-dy); // bottom-right
+        vec2 tl = v_texCoord + vec2(dx,-dy); // top-left
+        vec2 bc = v_texCoord - vec2(dx, 0.); // bottom-center
+        vec2 tc = v_texCoord + vec2(dx, 0.); // top-center
+        vec2 cl = v_texCoord - vec2(0., dy); // center-left
+        vec2 cr = v_texCoord + vec2(0., dy); // center-right
+
+        vec4 color = texture2D(u_texture, v_texCoord) +
+                     texture2D(u_texture, bl) +
+                     texture2D(u_texture, tr) +
+                     texture2D(u_texture, br) +
+                     texture2D(u_texture, tl) +
+                     texture2D(u_texture, bc) +
+                     texture2D(u_texture, tc) +
+                     texture2D(u_texture, cl) +
+                     texture2D(u_texture, cr);
+        gl_FragColor = color / 9.0;
+
+    }
+    else if(u_option == 8){
+
+        //sobel effect
+
+        float dx = 1.0 / u_width;
+        float dy = 1.0 / u_height;
+
+        vec2 bl = v_texCoord - vec2(dx, dy); // bottom-left
+        vec2 tr = v_texCoord + vec2(dx, dy); // top-right
+        vec2 br = v_texCoord - vec2(dx,-dy); // bottom-right
+        vec2 tl = v_texCoord + vec2(dx,-dy); // top-left
+        vec2 bc = v_texCoord - vec2(dx, 0.); // bottom-center
+        vec2 tc = v_texCoord + vec2(dx, 0.); // top-center
+        vec2 cl = v_texCoord - vec2(0., dy); // center-left
+        vec2 cr = v_texCoord + vec2(0., dy); // center-right
+
+        vec4 colorY = texture2D(u_texture, v_texCoord) * 0.0 +
+                     texture2D(u_texture, bl) +
+                     texture2D(u_texture, tr) * -1.0 +
+                     texture2D(u_texture, br) +
+                     texture2D(u_texture, tl) * -1.0 +
+                     texture2D(u_texture, bc) * 2.0 +
+                     texture2D(u_texture, tc) * -2.0 +
+                     texture2D(u_texture, cl) +
+                     texture2D(u_texture, cr) ;
+        vec4 colorX = texture2D(u_texture, v_texCoord) * 0.0 +
+                     texture2D(u_texture, bl) * -1.0+
+                     texture2D(u_texture, tr) * 1.0 +
+                     texture2D(u_texture, br) * 1.0 +
+                     texture2D(u_texture, tl) * -1.0+
+                     texture2D(u_texture, bc) +
+                     texture2D(u_texture, tc) +
+                     texture2D(u_texture, cl) * -2.0+
+                     texture2D(u_texture, cr) * 2.0;
+        vec4 color = sqrt(colorX*colorX + colorY*colorY);
+        gl_FragColor = vec4(color.rgb/3.0, 1.0);
+
     }
     else{
         // standard, no effect
