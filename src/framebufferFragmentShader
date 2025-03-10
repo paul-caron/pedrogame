@@ -41,19 +41,14 @@ void main() {
         float color = smoothstep(0.1, 0.2, distanceToSpiral);
         gl_FragColor = vec4((c.rgb+vec3(color))/2.0,1.0);
     }    
+
     else if(u_option == 4){
-      //motion sickness effect
-      float s = 0.1;//shake intensity
-      float x = mod(v_texCoord.x + s*cos(u_time/1000.0),1.0);
-      float y = mod(v_texCoord.y + s*sin(u_time/1000.0),1.0);
-      gl_FragColor = texture2D(u_texture, vec2(x,y));
-    }
-    else if(u_option == 5){
       //reverse
       vec4 color = texture2D(u_texture, v_texCoord); 
       gl_FragColor = vec4(vec3(1.0-color.r,1.0-color.g,1.0-color.b),1.0);
     }
-    else if(u_option == 6){
+
+    else if(u_option == 5){
       ///wavy
       const float SPEED = 2.0;      // Adjust for slower/faster transitions
       const float AMPLITUDE = 10.0; // Adjust for smaller/larger distortions
@@ -65,6 +60,13 @@ void main() {
       newTc.x += AMPLITUDE * sin(SPEED * u_time/100.0) * dx;
       newTc.y += AMPLITUDE * sin(SPEED * u_time/100.0) * dy;
       gl_FragColor = texture2D(u_texture, newTc);
+    }
+    else if(u_option == 6){
+      //pixelation
+      float dx = 0.0030;
+      float dy = 0.0030;
+      vec2 coord = vec2(dx * floor(v_texCoord.x/dx), dy*floor(v_texCoord.y/dy));
+      gl_FragColor = texture2D(u_texture, coord);
     }
     else{
         // standard, no effect

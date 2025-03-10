@@ -1344,7 +1344,7 @@
                 portal.collisionAction = () => { };
             };
 
-            let selena = new Selena(0,-0.2,0,`Thanks my love for rescuing me, Pedro. I want some latynx babies with you.(THE END)`);
+            let selena = new Selena(0,-0.2,0,`"Thanks my love for rescuing me, Pedro. I want some latynx babies with you." (THE END)`);
             let oldCollisionAction = selena.collisionAction.bind(selena);
             let p1 = {x:-0.5,y:-0.0};
             let p2 = {x:0.5,y:0.0};
