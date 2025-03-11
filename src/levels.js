@@ -389,6 +389,9 @@
 
         function Level6() {
             Object.assign(this, initLevel());
+            protagonist.defaultEffect = 5;
+            framebuffer.option = 5;
+
 
             dialogBlocking(`"It is here that you die"`, () => {
                 dialogBlocking(`"The big booty latina, Selena Gomez, is ours. Mouhahaha!"`,null,'assets/dea.png');
@@ -458,6 +461,8 @@
                 this.drawables = this.drawables.filter(d => d.y != -18 * sz);
                 this.colliders.push(...otherBricks);
                 this.drawables.push(...otherBricks);
+                protagonist.defaultEffect = 0;
+                framebuffer.option = 0;
             };
         }
 
@@ -761,6 +766,8 @@
 
         function Level10() {
             Object.assign(this, initLevel());
+            protagonist.defaultEffect = 5;
+            framebuffer.option = 5;
 
             dialogBlocking(`"D.O.G.E. told me all about you."`, () => {
                 dialogBlocking(`"You are a fool. Prepare to die!"`,null,'assets/ice.png');
@@ -856,6 +863,9 @@
                 this.drawables = this.drawables.filter(d => d.y != -18 * sz);
                 this.colliders.push(...otherBricks);
                 this.drawables.push(...otherBricks);
+                protagonist.defaultEffect = 0;
+                framebuffer.option = 0;
+
             };
         }
 
@@ -983,6 +993,8 @@
 
         function Level12() {
             Object.assign(this, initLevel());
+            protagonist.defaultEffect = 5;
+            framebuffer.option = 5;
 
             dialogBlocking(`"Grump put me in charge."`, () => {
                 dialogBlocking(`"I am in charge of killing you!"`,null,'assets/doge.png');
@@ -1126,11 +1138,15 @@
                 this.drawables = this.drawables.filter(d => d.y != -18 * sz);
                 this.colliders.push(...otherBricks);
                 this.drawables.push(...otherBricks);
+                protagonist.defaultEffect = 0;
+                framebuffer.option = 0;
             };
         }
 
         function Level14() {
             Object.assign(this, initLevel());
+            protagonist.defaultEffect = 5;
+            framebuffer.option = 5;
 
 
             dialogBlocking(`"I am Grump."`, () => {
@@ -1311,6 +1327,8 @@
                 this.drawables = this.drawables.filter(d => d.y != -18 * sz);
                 this.colliders.push(...otherBricks);
                 this.drawables.push(...otherBricks);
+                protagonist.defaultEffect = 0;
+                framebuffer.option = 0;
             };
 
             grump.expiring = () => {
@@ -1321,7 +1339,6 @@
                 this.drawables.push(eye);
                 this.movers.push(eye);
             }
-      
        }
 
         function LevelEnding() {

@@ -685,8 +685,10 @@ class Protagonist extends Drawable {
         this.dy = 0;
         let bullets = [];
         this.chargedTime = 0;
+        this.defaultEffect = 0;
     }
     attack() {
+        framebuffer.option = this.defaultEffect;
         this.isCharging = false;
 
         if (!this.weapon) return;
@@ -749,6 +751,8 @@ class Protagonist extends Drawable {
         this.chargedTime = 0;
     }
     attack2(){
+        framebuffer.option = 3;
+        setTimeout(_=>{framebuffer.option=this.defaultEffect;},2000);
         const n = 6;
         for(let i=0;i<n;++i){
         let angle = i * Math.PI * 2 / n;
@@ -765,6 +769,11 @@ class Protagonist extends Drawable {
         this.chargedTime = 0;
     }
     charge(dt){
+        if(this.chargedTime >= 3000) framebuffer.option = 9;
+        if(this.chargedTime >= 300) {
+            let c = (Math.sin(this.chargedTime)+1)/2;
+            this.colorModifier = [c,c,c,1];
+        }
         this.chargedTime += dt;
     }
     getPosition() {
