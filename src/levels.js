@@ -766,8 +766,8 @@ function Level10() {
     protagonist.defaultEffect = 5;
     framebuffer.option = 5;
 
-    dialogBlocking(`"D.O.G.E. told me all about you."`, () => {
-        dialogBlocking(`"You are a fool. Prepare to die!"`,null,'assets/ice.png');
+    dialogBlocking(`"You came here illegally, you fool."`, () => {
+        dialogBlocking(`"I will deport your corpse."`,null,'assets/ice.png');
     },'assets/ice.png');
 
     let portal = new Portal(0.0, -32 * sz, 0.0);
@@ -1375,8 +1375,8 @@ function LevelEnding() {
        let babyType = classes[Math.floor(Math.random()*2)];
        let rp = randomP();
        let newv = {x:(rp.x + v.x)/3,y:(rp.y + v.y)/3};
-       let x = newv.x//(Math.random() - 0.5) * 2.5;
-       let y = newv.y + selena.y//(Math.random() - 0.5) * 2.5;
+       let x = newv.x;
+       let y = newv.y + selena.y;
        v = newv;
        let baby = new babyType(x,y,0);
        baby.x = x;

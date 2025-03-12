@@ -14,9 +14,24 @@ function initEvents(){
         if (event.key === " "){
           protagonist.isCharging = true;
         }
-        if (Number.parseInt(event.key)){
+        if (event.key === "m"){ //music toggle
+            if(audio.paused){
+                audio=document.querySelector(audios[audioIndex++]);
+                audio.play();
+                audioIndex %= audios.length;
+            }else{
+                audio.pause();
+            };
+        }
+        if (!isNaN(0.0+Number.parseInt(event.key))){
           console.log(event.key);
           framebuffer.option = Number(event.key);
+        }
+        if (event.key === '+'  || event.key === '='){
+            if(zoomFactor > 0) zoomFactor -= 0.25;
+        }
+        if (event.key === '-'){
+            if(zoomFactor < 2) zoomFactor += 0.25;
         }
     });
 
@@ -30,6 +45,16 @@ function initEvents(){
     });
 
     canvas.addEventListener('touchstart', (event) => { event.preventDefault(); document.querySelector("#buttons").style.visibility = "visible"; });
+    document.querySelector("#music").addEventListener("click", (e) => {
+        e.preventDefault();
+        if(audio.paused){
+            audio=document.querySelector(audios[audioIndex++]);
+            audio.play();
+            audioIndex %= audios.length;
+        }else{
+            audio.pause();
+        };
+    });
     document.querySelector("#left").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowLeft"] = true; });
     document.querySelector("#left").addEventListener("touchend", (e) => { e.preventDefault(); keys["ArrowLeft"] = false; });
     document.querySelector("#right").addEventListener("touchstart", (e) => { e.preventDefault(); keys["ArrowRight"] = true; });

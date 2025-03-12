@@ -665,14 +665,8 @@ class Protagonist extends Drawable {
             "textureIndices": [0, 1],
             "indexPointer": 0,
         };
-        this.animations.attack = {
-            "timePerFrame": 0,
-            "counter": 0,
-            "textureIndices": [0],
-            "indexPointer": 0,
-        };
         this.animations.blink = {
-            "timePerFrame": 20,
+            "timePerFrame": 100,
             "counter": 0,
             "textureIndices": [0, 2],
             "indexPointer": 0,
@@ -690,6 +684,7 @@ class Protagonist extends Drawable {
     attack() {
         framebuffer.option = this.defaultEffect;
         this.isCharging = false;
+        this.animation = 'idle';
 
         if (!this.weapon) return;
         if (!this.ammoType) return;
@@ -771,8 +766,7 @@ class Protagonist extends Drawable {
     charge(dt){
         if(this.chargedTime >= 3000) framebuffer.option = 9;
         if(this.chargedTime >= 300) {
-            let c = (Math.sin(this.chargedTime)+1)/2;
-            this.colorModifier = [c,c,c,1];
+            this.animation = 'blink';
         }
         this.chargedTime += dt;
     }

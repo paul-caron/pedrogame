@@ -23,7 +23,7 @@
     <audio id="ether" src="assets/pedroEther.mp3" type="audio/mp3" preload="auto" loop></audio>
     <audio id="dorienigm" src="assets/dorienigm.mp3" type="audio/mp3" preload="auto" loop></audio>
     <audio id="mom" src="assets/mom.wav" type="audio/wav" preload="auto" loop></audio>
-    <button id="music" onClick="audio.paused?audio.play():audio.pause();">🎵</button>
+    <button id="music">🎵</button>
     <button id="zoomIn" onClick="if(zoomFactor>0)zoomFactor-=0.25;">&plus;</button>
     <button id="zoomOut" onClick="if(zoomFactor<2)zoomFactor+=0.25;">&minus;</button>
     <canvas id="webglCanvas"></canvas>
@@ -39,7 +39,7 @@ async function start(){
 
         //INIT
         await initWebGL(); //init canvas, webgl context, textures, programs, attributes and uniform locations
-        initEvents();
+        initEvents(); //keyboard and touch events
         level = new Level1();
         protagonist = new Protagonist();
         background = new Drawable([0], backgroundVertices);
@@ -76,7 +76,7 @@ async function start(){
                 if (keys["ArrowUp"] || keys["ArrowDown"] || keys["ArrowLeft"] || keys["ArrowRight"])
                     protagonistWalking = true;
                 if (protagonist.animation !== "blink") {
-                    protagonist.animation = keys[" "] ? "attack" : protagonistWalking ? "walking" : "idle";
+                    protagonist.animation = protagonistWalking ? "walking" : "idle";
                 }
                 protagonist.draw(dt);
 
@@ -149,7 +149,6 @@ async function start(){
                         protagonist.dx = -worldOffsetX + oldOffsetX;
                         protagonist.dy = -worldOffsetY + oldOffsetY;
                     }
-
 
                     // REVERSE PROTAGONIST MOVEMENTS IF HITS AN OBJECT
                     let collided = level.colliders.filter(c=>c.isColliding(-worldOffsetX,-worldOffsetY,sz));

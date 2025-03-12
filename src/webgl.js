@@ -164,17 +164,17 @@ async function initWebGL(){
     };
 
 
-
-
-
-
     // WebGL Rendering Settings
-//    gl.enable(gl.DEPTH_TEST);
+
     gl.enable(gl.SCISSOR_TEST);
-//    gl.depthFunc(gl.GEQUAL);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    //depth disabled for 2d game
+//    gl.enable(gl.DEPTH_TEST);
+//    gl.depthFunc(gl.GEQUAL);
 //    gl.clearDepth(0.0);
+
 
 }
