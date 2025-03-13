@@ -21,7 +21,7 @@ class Drawable {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.collisionAction = () => { };
+        this.onCollision = () => { };
         this.colorModifier = [1.0,1.0,1.0,1.0];
     }
     draw(dt) { // delta time from previous render
@@ -199,7 +199,7 @@ const Collider = {
         const verticalOverlap = Math.abs(y1 - y2) < (halfWidth1 + halfWidth2);
         return horizontalOverlap && verticalOverlap;
     },
-    collisionAction: function () { } // to override; callback called when collision happens
+    onCollision: function () { } // to override; callback called when collision happens
 };
 
 // Mixin
@@ -210,10 +210,10 @@ const Doomed = {
         this.lifetime -= dt;
         if (this.lifetime < 0) {
             this.expired = true;
-            this.expiring(dt);
+            this.onExpire(dt);
         }
     },
-    expiring: function (dt){
+    onExpire: function (dt){ //onExpire
         //override this callback, is called when object's lifetime expires
     },
 }
@@ -224,13 +224,17 @@ const Mover = {
     y: 0,
     dx: 0,
     dy: 0,
+    previousX: 0,
+    previousY: 0,
     move: function (dt) {
         if (this.dead) return;
+        this.previousX = this.x;
+        this.previousY = this.y;
         this.x += this.dx;
         this.y += this.dy;
-        this.updateDxy();
+        this.update();
     },
-    updateDxy: function (dt) { // to override
+    update: function (dt) { // to override
         //this.dx = ...;
         //this.dy = ...;
     },
@@ -265,10 +269,10 @@ class Puzzle {
     this.switches = [this.sw1,this.sw2,this.sw3,this.sw4];
 
     this.switches.forEach(s=>{
-        let oldCollisionAction = s.collisionAction.bind(s);
-        s.collisionAction = ()=>{
+        let oldonCollision = s.onCollision.bind(s);
+        s.onCollision = ()=>{
             if(!s.enabled) return;
-            oldCollisionAction();
+            oldonCollision();
             setTimeout(()=>{s.animation = 'idle';},1000);
             let shard = this.shards[s.swapIndices[0]];
             let shard2 = this.shards[s.swapIndices[1]];
@@ -346,7 +350,7 @@ class Enemy extends Drawable {
         this.y = y;
         this.life = 10;
         this.lifetime = Infinity;
-        this.expiring = () => {
+        this.onExpire = () => {
             let shard1 = new Drawable(
                              this.textureIndices,
                              getVertices(this.halfWidth/2, 0,0,2));
@@ -451,12 +455,12 @@ class Leaf extends Drawable {
         this.x = x;
         this.y = y;
         this.lifetime = Infinity;
-        this.collisionAction = () => {
+        this.onCollision = () => {
             if (!collectables['leaf']) collectables['leaf'] = 1;
             else collectables['leaf'] += 1;
             dialog(`YOU FOUND A LEAF [${collectables['leaf']}]`,null,'assets/leaf.png');
             this.lifetime = 0;
-            this.collisionAction = () => { };
+            this.onCollision = () => { };
         };
     }
 };
@@ -477,7 +481,7 @@ class Switch extends Fixture {
             "indexPointer": 0,
         };
         this.enabled = true;
-        this.collisionAction = () => {
+        this.onCollision = () => {
           //toggle
           if(this.enabled){
             this.animation = this.animation==='idle'?'rotate':'idle';
@@ -507,14 +511,14 @@ class Chest extends Fixture {
     }
     open() {
         this.animations.idle.textureIndices = [1];
-        this.collisionAction = () => { };
+        this.onCollision = () => { };
     }
 }
 
 class DEA extends Enemy {
     constructor(x, y, z) {
         super(sz, [18, 19], tileVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY THE D.E.A.",null,'assets/dea.png');
         };
@@ -532,7 +536,7 @@ class DEA extends Enemy {
 class DEA_Boss extends Enemy {
     constructor(x, y, z) {
         super(boss_sz, [18, 19], bossVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY THE D.E.A.",null,'assets/dea.png');
         };
@@ -550,7 +554,7 @@ class DEA_Boss extends Enemy {
 class Grump_Boss extends Enemy {
     constructor(x, y, z) {
         super(boss_sz, [30,31], bossVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY GRUMP",null,'assets/grump.png');
         };
@@ -568,7 +572,7 @@ class Grump_Boss extends Enemy {
 class Eye_Boss extends Enemy {
     constructor(x, y, z) {
         super(boss_sz, [34,35,36], bossVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY THE EVIL EYE",null,'assets/eye.png');
         };
@@ -586,7 +590,7 @@ class Eye_Boss extends Enemy {
 class ICE extends Enemy {
     constructor(x, y, z) {
         super(sz, [25, 26], tileVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
         };
@@ -604,7 +608,7 @@ class ICE extends Enemy {
 class ICE_Boss extends Enemy {
     constructor(x, y, z) {
         super(boss_sz, [25, 26], bossVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
         };
@@ -622,7 +626,7 @@ class ICE_Boss extends Enemy {
 class DOGE extends Enemy {
     constructor(x, y, z) {
         super(sz, [28, 29], tileVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'doge.png');
         };
@@ -641,7 +645,7 @@ class DOGE extends Enemy {
 class DOGE_Boss extends Enemy {
     constructor(x, y, z) {
         super(boss_sz, [28, 29], bossVertices, x, y, z);
-        this.collisionAction = () => {
+        this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
         };
@@ -704,7 +708,7 @@ class Protagonist extends Drawable {
           bullet.y = -worldOffsetY + offY;
           bullet.lifetime = 2000;
           bullet.power = this.strength;
-          bullet.collisionAction = () => { };
+          bullet.onCollision = () => { };
           bullet.animation = "spin";
           bullets.push(bullet);
 
@@ -718,7 +722,7 @@ class Protagonist extends Drawable {
 
           Object.assign(line, Mover);
           Object.assign(line, Doomed);
-          line.updateDxy = (dt) => {
+          line.update = (dt) => {
               line.vertices[0] = worldOffsetX + line.origin.x;
               line.vertices[1] = -worldOffsetY - line.origin.y;
               line.vertices[7] = worldOffsetX + bullet.x;
@@ -758,7 +762,7 @@ class Protagonist extends Drawable {
         bullet.y = -worldOffsetY;
         bullet.lifetime = 2000;
         bullet.power = this.strength * 2;
-        bullet.collisionAction = () => { };
+        bullet.onCollision = () => { };
         bullets.push(bullet);
         }
         this.chargedTime = 0;
@@ -779,7 +783,7 @@ class NPC extends Fixture {
     constructor(x, y, z, text) {
         super(sz, [22, 23], tileVertices, x, y, z);
         this.text = text;
-        this.collisionAction = function () {
+        this.onCollision = function () {
             dialogBlocking(this.text,null,'assets/npc.png');
         }
     }
@@ -789,7 +793,7 @@ class Selena extends Fixture {
     constructor(x, y, z, text) {
         super(sz, [32, 33], tileVertices, x, y, z);
         this.text = text;
-        this.collisionAction = function () {
+        this.onCollision = function () {
             dialog(this.text,null,'assets/selena.png');
         }
     }

@@ -38,10 +38,10 @@ function Level13() {
     let switches = [sw1,sw2,sw3];
 
     switches.forEach(s=>{
-        let oldCollisionAction = s.collisionAction.bind(s);
-        s.collisionAction = () => {
+        let oldonCollision = s.onCollision.bind(s);
+        s.onCollision = () => {
             if(!s.enabled) return;
-            oldCollisionAction();
+            oldonCollision();
             if(sw1.isActivated() && sw2.isActivated() && sw3.isActivated()){
                 this.drawables = this.drawables.filter(d=>{
                     return !((d.y === sz * 24) && (d.x>-sz*24) && (d.x<sz*24));
@@ -54,7 +54,7 @@ function Level13() {
     });
 
     let portal = new Portal(0.0, sz * 54, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         protagonist.animation = "blink";
         controlsEnabled = false;
         dialogBlocking(
@@ -65,7 +65,7 @@ function Level13() {
             },
             "assets/portal.png"
         );
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
 
@@ -119,25 +119,25 @@ function Level1() {
         () => { dialogBlocking("SPACE BAR FOR ATTACK") });
 
     let chest = new Chest(-0.2, -0.0, 0.0);
-    chest.collisionAction = () => {
+    chest.onCollision = () => {
         protagonist.weapon = "gun";
         dialogBlocking("YOU FOUND A TRANQUILIZER GUN",null,'assets/chest3.png');
         chest.open();
     };
 
     let chest2 = new Chest(0.0, -0.2, 0.0);
-    chest2.collisionAction = () => {
+    chest2.onCollision = () => {
         protagonist.ammoType = "fentanyl";
         dialogBlocking("YOU FOUND FENTANYL TRANQUILIZER SHOTS",null,'assets/chest3.png');
         chest2.open();
     };
     let chest3 = new Chest(0.2, -0.0, 0.0);
-    chest3.collisionAction = () => {
+    chest3.onCollision = () => {
         dialogBlocking("YOU FOUND A LETTER FROM CHICKA MI AMOR:", () => { dialogBlocking('"Help me Pedro!"<Selena Gomez>',null,'assets/selena.png'); },'assets/chest3.png');
         chest3.open();
     };
     let portal = new Portal(0.0, 0.2 + sz * 2, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         protagonist.animation = "blink";
         controlsEnabled = false;
         dialogBlocking("YOU FOUND THE EXIT",
@@ -146,16 +146,16 @@ function Level1() {
                 level = new Level2();
             },
             'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let npc = new NPC(0, -0.35, 0, `"I think Grump took her to prison. Be careful of your enemies and of the booby traps."`);
 
     let sw = new Switch(0.0, 0.2, 0.0);
-    let oldCollisionAction = sw.collisionAction.bind(sw);
-    sw.collisionAction = () => {
+    let oldonCollision = sw.onCollision.bind(sw);
+    sw.onCollision = () => {
         if(!sw.enabled) return;
-        oldCollisionAction();
+        oldonCollision();
         if(sw.isActivated()){
            this.drawables.push(portal);
            this.colliders.push(portal);
@@ -193,7 +193,7 @@ function Level2() {
     bullet.dx = 0;
     bullet.dy = -0.003;
     bullet.lifetime = 2000;
-    bullet.collisionAction = () => {
+    bullet.onCollision = () => {
         die();
         dialogBlocking("YOU STEPPED ON DIRTY NEEDLE", () => {
             dialogBlocking("NOW YOU ARE HIV POSITIVE AND GAY!",null,'assets/syringe_down.png');
@@ -203,14 +203,14 @@ function Level2() {
     }
 
     let chest = new Chest(2.0, -0.2, 0.0);
-    chest.collisionAction = () => {
+    chest.onCollision = () => {
         dialogBlocking("YOU FOUND THE COCAINA (SPEED BUFF)",null,'assets/chest3.png');
         protagonist.speed = 2.0;
         chest.open();
     };
 
     let portal = new Portal(-2.0, -0.2, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         protagonist.animation = "blink";
         controlsEnabled = false;
         dialogBlocking("YOU FOUND THE EXIT",
@@ -218,7 +218,7 @@ function Level2() {
                 protagonist.animation = "idle";
                 level = new Level3();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let npc = new NPC(0, -0.35, 0, `"It is a very big world we live in. Don't get lost."`);
@@ -245,14 +245,14 @@ function Level3() {
     })();
 
     let dea = new DEA(0.2, -0.2, 0.0);
-    dea.updateDxy = (dt) => {
+    dea.update = (dt) => {
         dea.dy = 0;
         if (dea.x >= 0.2) dea.dx = -0.0003 * dt;
         if (dea.x <= -0.2) dea.dx = 0.0003 * dt;
     };
 
     let portal = new Portal(0.0, 0.2, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         protagonist.animation = "blink";
         controlsEnabled = false;
         dialogBlocking("YOU FOUND THE EXIT",
@@ -260,7 +260,7 @@ function Level3() {
                 protagonist.animation = "idle";
                 level = new Level4();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     this.colliders = [...bricks, dea];
@@ -278,7 +278,7 @@ function Level4() {
     Object.assign(this, initLevel());
 
     let portal = new Portal(0.0, 0.2, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         protagonist.animation = "blink";
         controlsEnabled = false;
         dialogBlocking("YOU FOUND THE EXIT",
@@ -286,7 +286,7 @@ function Level4() {
                 protagonist.animation = "idle";
                 level = new Level5();
             }, 'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let enemies = [];
@@ -299,7 +299,7 @@ function Level4() {
         let dea = new DEA(x, y, 0.0);
         dea.dx = 0;
         dea.dy = 0;
-        dea.updateDxy = function (dt) {
+        dea.update = function (dt) {
             if (!dt) return;
             let homingTarget = protagonist.getPosition();
             let dy = -dea.y + homingTarget.y;
@@ -355,13 +355,13 @@ function Level5() {
     })();
 
     for (let i = 0; i < 9; i++)
-        portals[i].collisionAction = () => { worldOffsetX = -(portals[i + 1].x + sz * 4); worldOffsetY = -(portals[i + 1]).y - sz * 4; };
+        portals[i].onCollision = () => { worldOffsetX = -(portals[i + 1].x + sz * 4); worldOffsetY = -(portals[i + 1]).y - sz * 4; };
     for (let i = 9; i < 18; i++)
-        portals[i].collisionAction = () => { worldOffsetX = -(portals[i - 1].x - sz * 4); worldOffsetY = -(portals[i - 1]).y + sz * 4; };
+        portals[i].onCollision = () => { worldOffsetX = -(portals[i - 1].x - sz * 4); worldOffsetY = -(portals[i - 1]).y + sz * 4; };
 
     let ports = portals.toSpliced(9, 1);
-    ports[8].collisionAction = () => { worldOffsetX = -0; worldOffsetY = 0; };
-    ports[ports.length - 1].collisionAction = () => {
+    ports[8].onCollision = () => { worldOffsetX = -0; worldOffsetY = 0; };
+    ports[ports.length - 1].onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -369,11 +369,11 @@ function Level5() {
                 protagonist.animation = "idle";
                 level = new Level6();
             }, 'assets/portal.png');
-        ports[ports.length - 1].collisionAction = () => { };
+        ports[ports.length - 1].onCollision = () => { };
     };
 
     let chest = new Chest(-sz * 8, -sz * 8, 0.0);
-    chest.collisionAction = () => {
+    chest.onCollision = () => {
         dialogBlocking("YOU FOUND THE SHROOMS (STRENGTH BUFF)",null,'assets/chest3.png');
         protagonist.strength += 1;
         chest.open();
@@ -395,7 +395,7 @@ function Level6() {
     },'assets/dea.png');
 
     let portal = new Portal(0.0, -32 * sz, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -403,7 +403,7 @@ function Level6() {
                 protagonist.animation = "idle";
                 level = new Level7();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let bricks = (() => {
@@ -429,7 +429,7 @@ function Level6() {
 
     let dea = new DEA_Boss(0, -0.4, 0.0);
     let animationCounter = 10000;
-    dea.updateDxy = function (dt) {//dt, {x:,y:}
+    dea.update = function (dt) {//dt, {x:,y:}
         let target = { x: 0, y: -0.4 };
         let speed = 0.5;
         if (animationCounter < 2000) {
@@ -467,7 +467,7 @@ function Level7() {
     Object.assign(this, initLevel());
 
     let portal = new Portal(0.0, sz * 5, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -475,20 +475,20 @@ function Level7() {
                 protagonist.animation = "idle";
                 level = new Level8();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     const n = 100;
     let npc = new NPC(0, -sz * 6, 0, `"Help this poor old farmer. Please collect ${n} of these plants"`);
-    let oldCollisionAction = npc.collisionAction.bind(npc);
-    npc.collisionAction = () => {
+    let oldonCollision = npc.onCollision.bind(npc);
+    npc.onCollision = () => {
         if (collectables['leaf'] && collectables['leaf'] >= n) {
             dialogBlocking(`"Thank you very much. Here is the exit"`,null,'assets/npc.png');
             this.colliders.push(portal);
             this.drawables.push(portal);
-            npc.collisionAction = () => {};
+            npc.onCollision = () => {};
         } else {
-            oldCollisionAction();
+            oldonCollision();
         }
     }
     let leaves = (() => {
@@ -509,7 +509,7 @@ function Level7() {
 function Level8() {
     Object.assign(this, initLevel());
     let portal = new Portal(0.0,0.2,0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -517,7 +517,7 @@ function Level8() {
                 protagonist.animation = "idle";
                 level = new Level9();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
     let ices = (()=>{
         let results = [];
@@ -547,7 +547,7 @@ function Level8() {
                         this.colliders.push(bubble);
                         this.drawables.push(bubble);
                         this.movers.push(bubble);
-                        bubble.collisionAction = () => {
+                        bubble.onCollision = () => {
                             die();
                             dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
                             bubble.dy = 0;
@@ -569,13 +569,13 @@ function Level8() {
 function Level9() {
     Object.assign(this, initLevel());
     let chest = new Chest(0, sz*16, 0.0);
-    chest.collisionAction = () => {
+    chest.onCollision = () => {
         protagonist.weapon = "double";
         dialogBlocking("YOU FOUND THE DOUBLE BARRELED GUN",null,'assets/chest3.png');
         chest.open();
     };
     let portal = new Portal(0.0,-sz*12,0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -583,7 +583,7 @@ function Level9() {
                 protagonist.animation = "idle";
                 level = new Level10();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
     let movingBrick = (upper,right,lower,left,x,y,reverse)=>{
         let brick = new Brick(x,y,0);
@@ -595,7 +595,7 @@ function Level9() {
           if(brick.moving){oldMove(dt);}
         };
         if(!reverse){
-          brick.updateDxy = (dt)=>{
+          brick.update = (dt)=>{
            const d = 0.001;
            //if in top row
            if(brick.y <= upper){
@@ -647,7 +647,7 @@ function Level9() {
            }
           };
         }else{
-          brick.updateDxy = (dt)=>{
+          brick.update = (dt)=>{
            //if in top row
            const d = 0.001;
            if(brick.y <= upper){
@@ -720,9 +720,9 @@ function Level9() {
     bricks1.pop();
     bricks1.pop();
     let switch1 = new Switch(-sz*3,sz*3,0);
-    let oldCollisionAction1 = switch1.collisionAction.bind(switch1);
-    switch1.collisionAction = ()=>{
-        oldCollisionAction1();
+    let oldonCollision1 = switch1.onCollision.bind(switch1);
+    switch1.onCollision = ()=>{
+        oldonCollision1();
         if(switch1.animation === 'rotate'){
             bricks1.forEach(b=>{b.moving=true;});
         }else{
@@ -733,9 +733,9 @@ function Level9() {
     bricks2.shift();
     bricks2.shift();
     let switch2 = new Switch(0,sz*3,0);
-    let oldCollisionAction2 = switch2.collisionAction.bind(switch2);
-    switch2.collisionAction = ()=>{
-        oldCollisionAction2();
+    let oldonCollision2 = switch2.onCollision.bind(switch2);
+    switch2.onCollision = ()=>{
+        oldonCollision2();
         if(switch2.animation === 'rotate'){
             bricks2.forEach(b=>{b.moving=true;});
         }else{
@@ -746,9 +746,9 @@ function Level9() {
     bricks3.pop();
     bricks3.pop();
     let switch3 = new Switch(sz*3,sz*3,0);
-    let oldCollisionAction3 = switch3.collisionAction.bind(switch3);
-    switch3.collisionAction = ()=>{
-        oldCollisionAction3();
+    let oldonCollision3 = switch3.onCollision.bind(switch3);
+    switch3.onCollision = ()=>{
+        oldonCollision3();
         if(switch3.animation === 'rotate'){
             bricks3.forEach(b=>{b.moving=true;});
         }else{
@@ -771,7 +771,7 @@ function Level10() {
     },'assets/ice.png');
 
     let portal = new Portal(0.0, -32 * sz, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -779,7 +779,7 @@ function Level10() {
                 protagonist.animation = "idle";
                 level = new Level11();
             }, 'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let bricks = (() => {
@@ -822,7 +822,7 @@ function Level10() {
                         this.colliders.push(bubble);
                         this.drawables.push(bubble);
                         this.movers.push(bubble);
-                        bubble.collisionAction = () => {
+                        bubble.onCollision = () => {
                             die();
                             dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
                             bubble.dy = 0;
@@ -831,7 +831,7 @@ function Level10() {
                     }
                 };
             };
-    ice.updateDxy = function (dt) {
+    ice.update = function (dt) {
         let target = { x: 0, y: -0.4 };
         let speed = 0.5;
         if (animationCounter < 2000) {
@@ -869,7 +869,7 @@ function Level10() {
 function Level11(){
     Object.assign(this, initLevel());
     let portal = new Portal(0.0, 0.2, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -877,7 +877,7 @@ function Level11(){
                 protagonist.animation = "idle";
                 level = new Level12();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
     let n = 2;
     let enemies = [];
@@ -909,7 +909,7 @@ function Level11(){
                 this.colliders.push(bubble);
                 this.drawables.push(bubble);
                 this.movers.push(bubble);
-                bubble.collisionAction = () => {
+                bubble.onCollision = () => {
                     die();
                     dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                     bubble.dy = 0;
@@ -931,22 +931,22 @@ function Level11(){
                   newBubble2.dx = Math.cos(newAngle2) * dt * 0.0003;
                   newBubble2.dy = Math.sin(newAngle2) * dt * 0.0003;
 
-                  newBubble.expiring=(dt)=>{
+                  newBubble.onExpire=(dt)=>{
                     if(newBubble.initialLifetime<500) return;
                     mult(dt,newBubble);
                   }
-                  newBubble2.expiring=(dt)=>{
+                  newBubble2.onExpire=(dt)=>{
                     if(newBubble2.initialLifetime<500) return;
                     mult(dt,newBubble2);
                   }
 
-                newBubble.collisionAction = () => {
+                newBubble.onCollision = () => {
                     die();
                     dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                     newBubble.dy = 0;
                     newBubble.dx = 0;
                 };
-                newBubble2.collisionAction = () => {
+                newBubble2.onCollision = () => {
                     die();
                     dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                     newBubble2.dy = 0;
@@ -957,7 +957,7 @@ function Level11(){
                   this.drawables.push(newBubble,newBubble2);
                   this.movers.push(newBubble,newBubble2);
                 };
-                bubble.expiring=(dt)=>{
+                bubble.onExpire=(dt)=>{
                   if(bubble.initialLifetime<500) return;
                   mult(dt,bubble);
                 }
@@ -998,7 +998,7 @@ function Level12() {
     },'assets/doge.png');
 
     let portal = new Portal(0.0, -32 * sz, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -1006,7 +1006,7 @@ function Level12() {
                 protagonist.animation = "idle";
                 level = new Level13();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let bricks = (() => {
@@ -1050,7 +1050,7 @@ function Level12() {
                         this.colliders.push(bubble);
                         this.drawables.push(bubble);
                         this.movers.push(bubble);
-                        bubble.collisionAction = () => {
+                        bubble.onCollision = () => {
                             die();
                             dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                             bubble.dy = 0;
@@ -1072,22 +1072,22 @@ function Level12() {
                           newBubble2.dx = Math.cos(newAngle2) * dt * 0.0003;
                           newBubble2.dy = Math.sin(newAngle2) * dt * 0.0003;
 
-                          newBubble.expiring=(dt)=>{
+                          newBubble.onExpire=(dt)=>{
                             if(newBubble.initialLifetime<500) return;
                             mult(dt,newBubble);
                           }
-                          newBubble2.expiring=(dt)=>{
+                          newBubble2.onExpire=(dt)=>{
                             if(newBubble2.initialLifetime<500) return;
                             mult(dt,newBubble2);
                           }
 
-                        newBubble.collisionAction = () => {
+                        newBubble.onCollision = () => {
                             die();
                             dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                             newBubble.dy = 0;
                             newBubble.dx = 0;
                         };
-                        newBubble2.collisionAction = () => {
+                        newBubble2.onCollision = () => {
                             die();
                             dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
                             newBubble2.dy = 0;
@@ -1098,7 +1098,7 @@ function Level12() {
                           this.drawables.push(newBubble,newBubble2);
                           this.movers.push(newBubble,newBubble2);
                         };
-                        bubble.expiring=(dt)=>{
+                        bubble.onExpire=(dt)=>{
                           if(bubble.initialLifetime<500) return;
                           mult(dt,bubble);
                         }
@@ -1107,7 +1107,7 @@ function Level12() {
                 };
     };
 
-    doge.updateDxy = function (dt) {
+    doge.update = function (dt) {
         let target = { x: 0, y: -0.4 };
         let speed = 0.5;
         if (animationCounter < 2000) {
@@ -1153,7 +1153,7 @@ function Level14() {
 
 
     let portal = new Portal(0.0, -32 * sz, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         controlsEnabled = false;
         protagonist.animation = "blink";
         dialogBlocking("YOU FOUND THE EXIT",
@@ -1161,7 +1161,7 @@ function Level14() {
                 protagonist.animation = "idle";
                 level = new LevelEnding();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let bricks = (() => {
@@ -1190,7 +1190,7 @@ function Level14() {
     eye.patrolY = 0.4;
     eye.resetReloadTime = () => {eye.reloadTime = 200;};
     eye.resetReloadTime();
-    eye.updateDxy = (dt) => {
+    eye.update = (dt) => {
         if(!dt) return ;
         eye.animationTime -= dt;
 
@@ -1231,13 +1231,13 @@ function Level14() {
               let bubble = new Bubble(eye.x, eye.y, 0);
               bubble.lifetime = 6000;
               let angle = 2 * Math.PI / n * i;
-              bubble.updateDxy = (dt) => {
+              bubble.update = (dt) => {
                   bubble.dx = Math.cos(angle + Math.PI/360) * 0.0003 * dt;
                   bubble.dy = Math.sin(angle + Math.PI/360) * 0.0003 * dt;
                   angle += Math.PI/360;
               };
 
-              bubble.collisionAction = ()=>{
+              bubble.onCollision = ()=>{
                   die();
                   dialog("YOU WERE CAUGHT BY THE EVIL EYE",null,'assets/eye.png');
               };
@@ -1269,7 +1269,7 @@ function Level14() {
                 };
                 bubble.lifetime = 2000;
                 let target = protagonist.getPosition();
-                bubble.updateDxy = (dt) => {
+                bubble.update = (dt) => {
                     let dx = target.x - bubble.x;
                     let dy = target.y - bubble.y;
                     if(Math.abs(dx+dy)<sz){
@@ -1279,7 +1279,7 @@ function Level14() {
                     bubble.dx = Math.cos(angle) * dt * 0.0003;
                     bubble.dy = Math.sin(angle) * dt * 0.0003;
                 };
-                bubble.collisionAction = () => {
+                bubble.onCollision = () => {
                     dialog("YOU WERE CAUGHT BY GRUMP. NO HAPPY ENDING",null,'assets/grump.png');
                     die();
                     bubble.dy = 0;
@@ -1294,7 +1294,7 @@ function Level14() {
     };
 
     let animationCounter = 10000;
-    grump.updateDxy = function (dt) {
+    grump.update = function (dt) {
         let target = { x: 0, y: -0.4 };
         let speed = 0.5;
         if (animationCounter < 2000) {
@@ -1328,7 +1328,7 @@ function Level14() {
         framebuffer.option = 0;
     };
 
-    grump.expiring = () => {
+    grump.onExpire = () => {
         eye.x = grump.x;
         eye.y = grump.y;
         this.colliders.push(eye);
@@ -1347,7 +1347,7 @@ function LevelEnding() {
     audio.play();
 
     let portal = new Portal(0.0, -0.6, 0.0);
-    portal.collisionAction = () => {
+    portal.onCollision = () => {
         protagonist.animation = "blink";
         controlsEnabled = false;
         dialogBlocking("YOU FOUND THE EXIT",
@@ -1355,11 +1355,11 @@ function LevelEnding() {
                 protagonist.animation = "idle";
                 level = new LevelCredits();
             },'assets/portal.png');
-        portal.collisionAction = () => { };
+        portal.onCollision = () => { };
     };
 
     let selena = new Selena(0,-0.2,0,`"Thanks my love for rescuing me, Pedro. I want some latynx babies with you." (THE END)`);
-    let oldCollisionAction = selena.collisionAction.bind(selena);
+    let oldonCollision = selena.onCollision.bind(selena);
     let p1 = {x:-0.5,y:-0.0};
     let p2 = {x:0.5,y:0.0};
     let p3 = {x:0,y:0.5};
@@ -1369,8 +1369,8 @@ function LevelEnding() {
         return ps[Math.floor(Math.random()*ps.length)];
     };
     let v = {x:0,y:0};
-    selena.collisionAction = () => {
-       oldCollisionAction();
+    selena.onCollision = () => {
+       oldonCollision();
        let classes = [Selena, Protagonist];
        let babyType = classes[Math.floor(Math.random()*2)];
        let rp = randomP();
