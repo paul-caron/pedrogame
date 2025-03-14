@@ -124,6 +124,21 @@ async function start(){
                         m.update(dt);
                     });
 
+
+                    // COLLISION CHECK BETWEEN COLLIDERS THEN REVERSE MOVEMENT IF BLOCKED
+                    let blockings = level.colliders.filter(c=>c.isBlocking);
+                    let blockables = level.colliders.filter(c=>c.isBlockable);
+
+                    blockables.forEach((blockable)=>{
+                        blockings.forEach((blocking)=>{
+                            if(blocking === blockable) return;
+                            if(blockable.isColliding(blocking.x,blocking.y,blocking.halfWidth)){
+                                blocking.x = blocking.previousX;
+                                blocking.y = blocking.previousY;
+                            }
+                        });
+                    });
+
                     // DOOMERS LIFETIMES CLEANING
                     level.drawables.forEach(d => { if (d.lifetime !== undefined) d.expire(dt); });
                     bullets.forEach(b => { if (b.lifetime !== undefined) b.expire(dt); });

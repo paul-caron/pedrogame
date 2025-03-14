@@ -342,9 +342,13 @@ class Fixture extends Drawable {
     constructor(sz, textures, vertices, x = 0, y = 0, z = 0) {
         super(textures, vertices, x, y, z);
         Object.assign(this, Collider);
+        this.isBlocking = true;
+        this.isBlockable = false;
         this.halfWidth = sz;
         this.x = x;
         this.y = y;
+        this.previousX = x;
+        this.previousY = y;
     }
 }
 
@@ -353,6 +357,8 @@ class Enemy extends Drawable {
         super(textures, vertices, x, y, z);
         Object.assign(this, Mover);
         Object.assign(this, Collider);
+        this.isBlocking = true;
+        this.isBlockable = true;
         Object.assign(this, Doomed);
         this.halfWidth = sz;
         this.x = x;
@@ -460,9 +466,13 @@ class Leaf extends Drawable {
         super([24], tileVertices, x, y);
         Object.assign(this, Collider);
         Object.assign(this, Doomed);
+        this.isBlocking = false;
+        this.isBlockable = false;
         this.halfWidth = sz;
         this.x = x;
         this.y = y;
+        this.previousX = x;
+        this.previousY = y;
         this.lifetime = Infinity;
         this.onCollision = () => {
             if (!collectables['leaf']) collectables['leaf'] = 1;
