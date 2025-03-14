@@ -6,6 +6,44 @@ function initLevel() {
     return { colliders: [], enemies: [], drawables: [], movers: [], transitionProgress: 0.0 };
 }
 
+function newLevel(){
+    Object.assign(this, initLevel());
+    let grid = [
+        "111111111111111111111111",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000100000000001000001",
+        "100000000000000000000001",
+        "100000000000000000000001",
+        "111111111111111111111111",
+    ];
+    let bricks = (()=>{
+        let results = [];
+        grid.forEach((row,i)=>{
+            row.split('').forEach((cell,j)=>{
+                if(cell == '0') return;
+                let x = 2*sz*(j-row.length/2);
+                let y = 2*sz*(i-grid.length/2);
+                let z = 0;
+                let brick = new Brick(x,y,z);
+                results.push(brick);
+            });
+        });
+        return results;
+    })();
+
+    let dea = new DEA2(-sz*18,0,0);
+    this.drawables = [...bricks,dea];
+    this.colliders = [...bricks,dea];
+    this.enemies = [dea];
+    this.movers = [dea];
+}
+
 function LevelCredits() {
     Object.assign(this, initLevel());
     audio.pause();

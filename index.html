@@ -44,7 +44,9 @@ async function start(){
 
         background = new Drawable([0], backgroundVertices);
         framebuffer = new Framebuffer();
-
+        level = new newLevel();
+        protagonist.ammoType = 'fjkldjslfk';
+        protagonist.weapon = 'gun';
         // THE LOOP
         let previousTime = 0; //time of the last rendering
         function render(time) {
@@ -133,8 +135,8 @@ async function start(){
                         blockings.forEach((blocking)=>{
                             if(blocking === blockable) return;
                             if(blockable.isColliding(blocking.x,blocking.y,blocking.halfWidth)){
-                                blocking.x = blocking.previousX;
-                                blocking.y = blocking.previousY;
+                                blockable.x = blockable.previousX;
+                                blockable.y = blockable.previousY;
                             }
                         });
                     });

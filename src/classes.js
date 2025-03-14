@@ -240,7 +240,7 @@ const Mover = {
         this.previousY = this.y;
         this.x += this.dx;
         this.y += this.dy;
-        this.update();
+//        this.update(dt);
     },
     update: function (dt) { // to override
         //this.dx = ...;
@@ -552,6 +552,33 @@ class DEA extends Enemy {
         };
         this.animation = 'walking';
         this.life = 15;
+    }
+}
+
+class DEA2 extends Enemy {
+    constructor(x, y, z) {
+        super(sz, [18, 19], tileVertices, x, y, z);
+        this.onCollision = () => {
+            die();
+            dialog("YOU WERE CAUGHT BY THE D.E.A.",null,'assets/dea.png');
+        };
+        this.animations.walking = {
+            "timePerFrame": 200,
+            "counter": 0,
+            "textureIndices": [0, 1],
+            "indexPointer": 0,
+        };
+        this.animation = 'walking';
+        this.life = 15;
+        this.update = (dt)=> {
+            if (!dt) return;
+            let homingTarget = protagonist.getPosition();
+            let dy = -this.y + homingTarget.y;
+            let dx = -this.x + homingTarget.x;
+            let angle = Math.atan2(dy, dx);
+            this.dx = 0.0001 * dt * Math.cos(angle);
+            this.dy = 0.0001 * dt * Math.sin(angle);
+        };
     }
 }
 
