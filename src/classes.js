@@ -521,6 +521,8 @@ class Portal extends Fixture {
             "textureIndices": [0, 1, 2, 3, 4, 5],
             "indexPointer": 0,
         };
+        this.isBlocking = false;
+        this.isBlockable = false;
     }
 }
 

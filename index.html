@@ -173,6 +173,11 @@ async function start(){
                     });
                     collided.forEach((c) => {
                         if (c.isColliding(-worldOffsetX, -worldOffsetY, sz)) {
+                            c.onCollision();
+                        }else{
+                            return ;
+                        }
+                        if (c.isBlocking) {
                             let [x,y] = [-oldOffsetX,-oldOffsetY];
                             // NON STICKY / WALL SLIDE
                             if(Math.abs(c.y-y) < Math.abs(c.x-x)){  
@@ -183,7 +188,6 @@ async function start(){
                                 worldOffsetX = oldOffsetX;
                                 worldOffsetY = oldOffsetY;
                             }
-                            c.onCollision();
                         }
                     });
 
