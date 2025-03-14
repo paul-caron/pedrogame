@@ -1,3 +1,4 @@
+"use strict";
 
 // Drawable Tile Class
 class Drawable {
