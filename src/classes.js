@@ -360,6 +360,7 @@ class Enemy extends Drawable {
         Object.assign(this, Collider);
         this.isBlocking = true;
         this.isBlockable = true;
+        this.isEnemy = true;
         Object.assign(this, Doomed);
         this.halfWidth = sz;
         this.x = x;

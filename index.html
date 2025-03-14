@@ -97,11 +97,21 @@ async function start(){
                     });
 
                     // CHECK COLLISION BETWEEN ENEMIES AND BULLETS
-                    level.enemies.forEach((e) => {
+                    level.colliders.forEach((e) => {
+//                    level.enemies.forEach((e) => {
                         if (e.dead) return;
                         bullets.forEach((b) => {
                             if (e.isColliding(b.x, b.y, sz)) {
                                 if (e.dead) return;
+                                if(!e.isEnemy){
+                                    b.dx = 0;
+                                    b.dy = 0;
+                                    b.lifetime = 0;
+                                    b.update =()=>{}
+                                    b.x = b.previousX;
+                                    b.y = b.previousY;
+                                    return;
+                                }
                                 e.colorModifier = [Math.sin(time)+1,1,1,1];
                                 let x = (Math.max(e.x - e.halfWidth, b.x-b.halfWidth)+Math.min(e.x+e.halfWidth, b.x+b.halfWidth))/2;
                                 let y = (Math.max(e.y - e.halfWidth, b.y-b.halfWidth)+Math.min(e.y+e.halfWidth, b.y+b.halfWidth))/2;

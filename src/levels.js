@@ -18,8 +18,8 @@ function newLevel(){
         "100000100000000001000001",
         "100000100000000001000001",
         "100000100000000001000001",
-        "100000000000000000000001",
-        "100000000000000000000001",
+        "100000100000000000000001",
+        "100000100000000000000001",
         "111111111111111111111111",
     ];
     let bricks = (()=>{
@@ -36,12 +36,26 @@ function newLevel(){
         });
         return results;
     })();
-
-    let dea = new DEA2(-sz*18,0,0);
-    this.drawables = [...bricks,dea];
-    this.colliders = [...bricks,dea];
-    this.enemies = [dea];
-    this.movers = [dea];
+    let generator = new Drawable([0], tileVertices,-sz*18,-sz*2,0);
+    Object.assign(generator, Mover);
+    generator.x = -sz*18;
+    generator.y = -sz*2;
+    generator.generationTime = 4000;
+    generator.update = (dt) =>{
+        generator.generationTime -= dt;
+        if(generator.generationTime < 0){
+            let dea = new DEA2(-sz*18,0,0);
+            this.drawables.push(dea);
+            this.movers.push(dea);
+            this.colliders.push(dea);
+            this.enemies.push(dea);
+            generator.generationTime =4000
+        }
+    };
+    this.drawables = [...bricks, generator];
+    this.colliders = [...bricks];
+    this.enemies = [];
+    this.movers = [generator];
 }
 
 function LevelCredits() {
