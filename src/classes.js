@@ -23,6 +23,7 @@ class Drawable {
         this.z = z;
         this.onCollision = () => { };
         this.colorModifier = [1.0,1.0,1.0,1.0];
+        this.isDrawable = true;
     }
     draw(dt) { // delta time from previous render
         gl.useProgram(program);
@@ -169,6 +170,7 @@ class Char extends Drawable{
 class Line {
     constructor(vertices) {
         this.vertices = vertices;  //x,y,z,r,g,b,a
+        this.isDrawable = true;
     }
     draw(dt) { // delta time from previous render
         gl.useProgram(program2);
@@ -188,6 +190,9 @@ class Line {
 
 // Mixin
 const Collider = {
+    isCollider: true,
+    isBlockable: true, //can it be blocked from moving if bumping into obtacles?
+    isBlocking: true, //can it be an obstacle that blocks movements of another?
     halfWidth: 0,
     x: 0,
     y: 0,
@@ -204,6 +209,7 @@ const Collider = {
 
 // Mixin
 const Doomed = {
+    isDoomed: true,
     lifetime: 2000,
     expired: false,
     expire: function (dt) {
@@ -220,6 +226,7 @@ const Doomed = {
 
 // Mixin
 const Mover = {
+    isMover: true,
     x: 0,
     y: 0,
     dx: 0,
@@ -305,6 +312,8 @@ class Bullet extends Drawable {
         Object.assign(this, Mover);
         Object.assign(this, Doomed);
         Object.assign(this, Collider);
+        this.isBlockable = false;
+        this.isBlocking = false;
         this.halfWidth = sz;
         this.x = x;
         this.y = y;

@@ -192,11 +192,3 @@ function die() {
     }, 6000);
 }
 
-function initLevel() {
-    controlsEnabled = true;
-    bullets = [];
-    worldOffsetX = 0;
-    worldOffsetY = 0;
-    return { colliders: [], enemies: [], drawables: [], movers: [], transitionProgress: 0.0 }
-}
-
