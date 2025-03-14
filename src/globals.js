@@ -1,3 +1,5 @@
+'use strict'
+
 // Globals
 let frameBuffer;
 let frameBufferTexture;

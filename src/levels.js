@@ -298,10 +298,10 @@ function Level4() {
     };
 
     let enemies = [];
-    let enemyCount = 20;
+    let enemyCount = 30;
     for (let i = 1; i <= enemyCount; i++) {
         let radius = 0.1 * i + 0.5;
-        let angle = Math.PI / 3 * i;
+        let angle = Math.PI / 7 * i;
         let x = Math.cos(angle) * radius;
         let y = Math.sin(angle) * radius;
         let dea = new DEA(x, y, 0.0);
@@ -529,10 +529,11 @@ function Level8() {
     };
     let ices = (()=>{
         let results = [];
-        let n = 5;
-        let da = Math.PI * 2 / n;
+        let n = 15;
+        let da = 4 * Math.PI * 2 / n;
         for(let i = 0; i < n; ++i){
-            let ice = new ICE(Math.cos(da*i)*0.7, Math.sin(da*i)*0.7, 0);
+            let radius = 0.7 + i * 0.1;
+            let ice = new ICE(Math.cos(da*i)*radius, Math.sin(da*i)*radius, 0);
             ice.reloadTime = 2000;
             ice.dying = () => {
                 dialog(`${--n} enemies left`,null,'assets/ice.png');
@@ -541,7 +542,12 @@ function Level8() {
                     this.colliders.push(portal);
                 }
             };
+            ice.previousX = ice.x;
+            ice.previousY = ice.y;
+            let oldmove = ice.move.bind(ice);
             ice.move = (dt) => {
+                if(ice.dead) return;
+                oldmove(dt);
                 ice.reloadTime -= dt;
                 if(ice.reloadTime < 0){
                     ice.reloadTime = 2000;
@@ -564,6 +570,16 @@ function Level8() {
                     }
                 };
             };
+            ice.update = function (dt) {
+                if (!dt) return;
+                let homingTarget = protagonist.getPosition();
+                let dy = -ice.y + homingTarget.y;
+                let dx = -ice.x + homingTarget.x;
+                let angle = Math.atan2(dy, dx);
+                ice.dx = 0.00004 * dt * Math.cos(angle);
+                ice.dy = 0.00004 * dt * Math.sin(angle);
+            };
+
             results.push(ice);
         }
         return results;

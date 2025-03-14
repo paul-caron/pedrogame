@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="src/stylesheet.css">
     </style>
 </head>
-
 <body>
     <div id="dialogBox"><img id="dialogAvatar"><pre id="dialogText">start</pre></div>
     <div id="buttons">
@@ -42,6 +41,7 @@ async function start(){
         initEvents(); //keyboard and touch events
         level = new Level1();
         protagonist = new Protagonist();
+
         background = new Drawable([0], backgroundVertices);
         framebuffer = new Framebuffer();
 
