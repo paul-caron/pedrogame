@@ -9,18 +9,18 @@ function initLevel() {
 function newLevel(){
     Object.assign(this, initLevel());
     let grid = [
-        "111111111111111111111111",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000001000001",
-        "100000100000000000000001",
-        "100000100000000000000001",
-        "111111111111111111111111",
+        "1111111111111111111111111",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000000000001",
+        "1000000100000000000000001",
+        "1111111111111111111111111",
     ];
     let bricks = (()=>{
         let results = [];
@@ -36,24 +36,41 @@ function newLevel(){
         });
         return results;
     })();
-    let generator = new Drawable([0], tileVertices,-sz*18,-sz*2,0);
+    let door = bricks.filter(b=>{return b.x == -sz * 11 && b.y >= -sz*2 && b.y < sz*2;});
+    let generator = new Drawable([0], tileVertices,-sz*18,0,0);
     Object.assign(generator, Mover);
+    generator.spawningZone = {x:-sz*16,y:0,halfWidth:sz};
     generator.x = -sz*18;
-    generator.y = -sz*2;
+    generator.y = 0;
     generator.generationTime = 4000;
     generator.update = (dt) =>{
         generator.generationTime -= dt;
         if(generator.generationTime < 0){
-            let dea = new DEA2(-sz*18,0,0);
-            this.drawables.push(dea);
-            this.movers.push(dea);
-            this.colliders.push(dea);
-            this.enemies.push(dea);
-            generator.generationTime =4000
+            let {x,y,halfWidth} = generator.spawningZone;
+            let spawning = level.enemies.filter(e=>e.isColliding(x,y,halfWidth)).length === 0;
+            if(spawning){
+                let dea = new DEA2(x,y,0);
+                this.drawables.push(dea);
+                this.movers.push(dea);
+                this.colliders.push(dea);
+                this.enemies.push(dea);
+                generator.generationTime =4000
+            }
         }
     };
-    this.drawables = [...bricks, generator];
-    this.colliders = [...bricks];
+
+    let sw = new Switch(17*sz,0,0);
+    let oldonCollision = sw.onCollision.bind(sw);
+    sw.onCollision=()=>{
+        oldonCollision();
+        door.forEach(d=>{
+            Object.assign(d, Doomed);
+            d.lifetime = 0;
+        });
+        sw.onCollision = ()=>{};
+    };
+    this.drawables = [...bricks, generator, sw];
+    this.colliders = [...bricks, sw];
     this.enemies = [];
     this.movers = [generator];
 }

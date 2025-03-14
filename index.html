@@ -145,8 +145,17 @@ async function start(){
                         blockings.forEach((blocking)=>{
                             if(blocking === blockable) return;
                             if(blockable.isColliding(blocking.x,blocking.y,blocking.halfWidth)){
-                                blockable.x = blockable.previousX;
-                                blockable.y = blockable.previousY;
+//                                blockable.x = blockable.previousX;
+//                                blockable.y = blockable.previousY;
+                                // NON STICKY / WALL SLIDE
+                                if(Math.abs(blocking.y-blockable.y) < Math.abs(blocking.x-blockable.x)){  
+                                    blockable.x = blockable.previousX;
+                                }else if(Math.abs(blocking.x-blockable.x) < Math.abs(blocking.y-blockable.y)){  
+                                    blockable.y = blockable.previousY;
+                                }else{ 
+                                    blockable.x = blockable.previousX;
+                                    blockable.y = blockable.previousY;
+                                }
                             }
                         });
                     });
