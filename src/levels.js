@@ -298,9 +298,9 @@ function Level4() {
     };
 
     let enemies = [];
-    let enemyCount = 10;
+    let enemyCount = 20;
     for (let i = 1; i <= enemyCount; i++) {
-        let radius = 0.2 * i + 0.5;
+        let radius = 0.1 * i + 0.5;
         let angle = Math.PI / 3 * i;
         let x = Math.cos(angle) * radius;
         let y = Math.sin(angle) * radius;
