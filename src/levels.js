@@ -1,9 +1,97 @@
+"use strict";
+
 function initLevel() {
     controlsEnabled = true;
     bullets = [];
     worldOffsetX = 0;
     worldOffsetY = 0;
     return { colliders: [], enemies: [], drawables: [], movers: [], transitionProgress: 0.0 };
+}
+
+function gridToBricks(grid){ //takes array of strings of 0 and 1 and returns all brick object in positions where '1' were found
+    let results = [];
+    grid.forEach((row,i)=>{
+        row.split('').forEach((cell,j)=>{
+            if(cell == '0') return;
+            let x = 2*sz*(j-row.length/2);
+            let y = 2*sz*(i-grid.length/2);
+            let z = 0;
+            let brick = new Brick(x,y,z);
+            results.push(brick);
+        });
+    });
+    return results;
+}
+
+function Level8(){
+    Object.assign(this, initLevel());
+    let grid = [
+        "1111111111111111111111111",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1111111111111111111111111",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1000000000000000000000001",
+        "1111111111111111111111111",
+    ];
+    protagonist.setPosition(0,sz*12);
+    let bricks = gridToBricks(grid);
+    let door = bricks.filter(b=> {return b.x >= -sz*4 && b.x <sz*4 && b.y >-sz*20 && b.y <0;});
+    let puzzle = new Puzzle(25, 0, 0, 0);
+    puzzle.onSolve = ()=>{
+        door.forEach(d=>{Object.assign(d,Doomed);d.lifetime=0;});
+    };
+    let portal = new Portal(0,-20*sz,0);
+    portal.onCollision = () => {
+        protagonist.animation = "blink";
+        controlsEnabled = false;
+        dialogBlocking("YOU FOUND THE EXIT",
+            () => {
+                protagonist.animation = "idle";
+                level = new Level9();
+            },
+            'assets/portal.png');
+        portal.onCollision = () => { };
+    };
+    let generatorsCount = 2;
+    let generator = new Generator(-sz*22,-sz*20,0,ICE,8000);
+    generator.dying = ()=>{
+        generatorsCount--;
+        if(generatorsCount<=0){
+            level.drawables.push(portal);
+            level.colliders.push(portal);
+        }
+    };
+    let generator2 = new Generator(sz*20,-sz*20,0);
+    generator2.dying = ()=>{
+        generatorsCount--;
+        if(generatorsCount<=0){
+            level.drawables.push(portal);
+            level.colliders.push(portal);
+        }
+    };
+    let crate = new Crate(-sz*22,sz*18,0);
+    let crate2 = new Crate(sz*20,sz*18,0);
+    this.drawables.push(generator,generator2,crate,crate2,...bricks,...puzzle.switches,...puzzle.shards);
+    this.colliders.push(generator,generator2,crate,crate2,...bricks,...puzzle.switches);
+    this.movers.push(generator,generator2);
+    this.enemies.push(crate,crate2,generator,generator2);
 }
 
 function Level4(){
@@ -34,20 +122,8 @@ function Level4(){
         "1111111111111111111111111",
     ];
     protagonist.setPosition(0,-sz*12);
-    let bricks = (()=>{
-        let results = [];
-        grid.forEach((row,i)=>{
-            row.split('').forEach((cell,j)=>{
-                if(cell == '0') return;
-                let x = 2*sz*(j-row.length/2);
-                let y = 2*sz*(i-grid.length/2);
-                let z = 0;
-                let brick = new Brick(x,y,z);
-                results.push(brick);
-            });
-        });
-        return results;
-    })();
+    let bricks = gridToBricks(grid);
+
     let door = bricks.filter(b=>{return b.x == -sz * 11 && b.y >= -sz*14 && b.y < -sz*10;});
     let door2 = bricks.filter(b=>{return b.x >= -sz * 20 && b.x < -sz*16 && b.y == -sz*1;});
     let door3 = bricks.filter(b=>{return b.x == -sz * 11 && b.y < sz*12 && b.y >= sz*8;});
@@ -613,7 +689,7 @@ function Level7() {
     this.colliders = [npc, ...leaves];
 }
 
-function Level8() {
+function Level8b() {
     Object.assign(this, initLevel());
     let portal = new Portal(0.0,0.2,0.0);
     portal.onCollision = () => {
@@ -633,52 +709,6 @@ function Level8() {
         for(let i = 0; i < n; ++i){
             let radius = 0.7 + i * 0.1;
             let ice = new ICE(Math.cos(da*i)*radius, Math.sin(da*i)*radius, 0);
-            ice.reloadTime = 2000;
-            ice.dying = () => {
-                dialog(`${--n} enemies left`,null,'assets/ice.png');
-                if(n === 0) {
-                    this.drawables.push(portal);
-                    this.colliders.push(portal);
-                }
-            };
-            ice.previousX = ice.x;
-            ice.previousY = ice.y;
-            let oldmove = ice.move.bind(ice);
-            ice.move = (dt) => {
-                if(ice.dead) return;
-                oldmove(dt);
-                ice.reloadTime -= dt;
-                if(ice.reloadTime < 0){
-                    ice.reloadTime = 2000;
-                    if(!ice.dead){
-                        let bubble = new Bubble(ice.x, ice.y, 0);
-                        let {x,y} = protagonist.getPosition();
-                        let angle = Math.atan2(y-ice.y,x-ice.x);
-                        bubble.dx = Math.cos(angle) * dt * 0.0003;
-                        bubble.dy = Math.sin(angle) * dt * 0.0003;
-                        bubble.lifetime = 2000;
-                        this.colliders.push(bubble);
-                        this.drawables.push(bubble);
-                        this.movers.push(bubble);
-                        bubble.onCollision = () => {
-                            die();
-                            dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
-                            bubble.dy = 0;
-                            bubble.dx = 0;
-                       };
-                    }
-                };
-            };
-            ice.update = function (dt) {
-                if (!dt) return;
-                let homingTarget = protagonist.getPosition();
-                let dy = -ice.y + homingTarget.y;
-                let dx = -ice.x + homingTarget.x;
-                let angle = Math.atan2(dy, dx);
-                ice.dx = 0.00004 * dt * Math.cos(angle);
-                ice.dy = 0.00004 * dt * Math.sin(angle);
-            };
-
             results.push(ice);
         }
         return results;

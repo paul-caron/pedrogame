@@ -432,17 +432,18 @@ class Enemy extends Drawable {
 
 
 class Generator extends Enemy {
-    constructor(x,y,z){
+    constructor(x,y,z,classtype = DEA, generationTime = 4000){
         super(sz, [44,45,46], tileVertices,x,y,z);
         this.spawningZone = {x:x,y:y+sz*2,halfWidth:sz};
         this.life = 600;
-        this.generationTime = 4000;
+        this.generationTime = generationTime;
         this.animations.idle = {
             "timePerFrame": 500,
             "counter": 0,
             "textureIndices": [0, 0, 0, 0, 1, 2, 1, 2],
             "indexPointer": 0,
         };
+        this.classtype = classtype;
         this.update = (dt) =>{
             this.generationTime -= dt;
             if(this.generationTime < 0){
@@ -450,12 +451,12 @@ class Generator extends Enemy {
                 let spawning = level.enemies.
                     filter(e=>e.isColliding(x,y,halfWidth)).length===0;
                 if(spawning){
-                    let dea = new DEA(x,y,0);
+                    let dea = new classtype(x,y,0);
                     level.drawables.push(dea);
                     level.movers.push(dea);
                     level.colliders.push(dea);
                     level.enemies.push(dea);
-                    this.generationTime =4000
+                    this.generationTime = generationTime;
                 }
             }
        };
@@ -681,6 +682,47 @@ class ICE extends Enemy {
         };
         this.animation = 'walking';
         this.life = 50;
+        this.reloadTime = 2000;
+        this.previousX = this.x;
+        this.previousY = this.y;
+        this.update = (dt) => {
+            if (!dt) return;
+            if(this.dead) return;
+
+            // MOVE
+            let target = protagonist.getPosition();
+            let dy = -this.y + target.y;
+            let dx = -this.x + target.x;
+            let angle = Math.atan2(dy, dx);
+            this.dx = 0.00004 * dt * Math.cos(angle);
+            this.dy = 0.00004 * dt * Math.sin(angle);
+
+            // SHOOT BUBBLE
+            this.reloadTime -= dt;
+            if(this.reloadTime < 0){
+                this.reloadTime = 2000;
+                if(!this.dead){
+                    let bubble = new Bubble(this.x,this.y,0);
+                    let {x,y} = target;
+                    let angle = Math.atan2(y-this.y,x-this.x);
+                    bubble.update = (bdt)=>{
+                        bubble.dx = Math.cos(angle) * bdt * 0.0003;
+                        bubble.dy = Math.sin(angle) * bdt * 0.0003;
+                    }
+                    bubble.lifetime = 2000;
+                    level.colliders.push(bubble);
+                    level.drawables.push(bubble);
+                    level.movers.push(bubble);
+                    bubble.onCollision = () => {
+                        die();
+                        dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
+                        bubble.dy = 0;
+                        bubble.dx = 0;
+                    };
+                }
+            };
+        };
+
     }
 };
 
