@@ -37,28 +37,7 @@ function newLevel(){
         return results;
     })();
     let door = bricks.filter(b=>{return b.x == -sz * 11 && b.y >= -sz*2 && b.y < sz*2;});
-    let generator = new Drawable([0], tileVertices,-sz*18,0,0);
-    Object.assign(generator, Mover);
-    generator.spawningZone = {x:-sz*16,y:0,halfWidth:sz};
-    generator.x = -sz*18;
-    generator.y = 0;
-    generator.generationTime = 4000;
-    generator.update = (dt) =>{
-        generator.generationTime -= dt;
-        if(generator.generationTime < 0){
-            let {x,y,halfWidth} = generator.spawningZone;
-            let spawning = level.enemies.filter(e=>e.isColliding(x,y,halfWidth)).length === 0;
-            if(spawning){
-                let dea = new DEA(x,y,0);
-                this.drawables.push(dea);
-                this.movers.push(dea);
-                this.colliders.push(dea);
-                this.enemies.push(dea);
-                generator.generationTime =4000
-            }
-        }
-    };
-
+    let generator = new Generator(-18*sz,-sz*8,0);
     let sw = new Switch(17*sz,0,0);
     let oldonCollision = sw.onCollision.bind(sw);
     sw.onCollision=()=>{
@@ -70,8 +49,8 @@ function newLevel(){
         sw.onCollision = ()=>{};
     };
     this.drawables = [...bricks, generator, sw];
-    this.colliders = [...bricks, sw];
-    this.enemies = [];
+    this.colliders = [...bricks, sw, generator];
+    this.enemies = [generator];
     this.movers = [generator];
 }
 

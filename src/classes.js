@@ -428,6 +428,39 @@ class Enemy extends Drawable {
     dying = function () { } // override
 }
 
+
+class Generator extends Enemy {
+    constructor(x,y,z){
+        super(sz, [44,45,46], tileVertices,x,y,z);
+        this.spawningZone = {x:x,y:y+sz*2,halfWidth:sz};
+        this.life = 600;
+        this.generationTime = 4000;
+        this.animations.idle = {
+            "timePerFrame": 500,
+            "counter": 0,
+            "textureIndices": [0, 0, 0, 0, 1, 2, 1, 2],
+            "indexPointer": 0,
+        };
+        this.update = (dt) =>{
+            this.generationTime -= dt;
+            if(this.generationTime < 0){
+                let {x,y,halfWidth} = this.spawningZone;
+                let spawning = level.enemies.
+                    filter(e=>e.isColliding(x,y,halfWidth)).length===0;
+                if(spawning){
+                    let dea = new DEA(x,y,0);
+                    level.drawables.push(dea);
+                    level.movers.push(dea);
+                    level.colliders.push(dea);
+                    level.enemies.push(dea);
+                    this.generationTime =4000
+                }
+            }
+       };
+
+    }
+};
+
 class Particle extends Drawable {
     constructor(textures, x, y) {
         const sz = 0.004;
@@ -538,26 +571,6 @@ class Chest extends Fixture {
     }
 }
 
-
-/*
-class DEA extends Enemy {
-    constructor(x, y, z) {
-        super(sz, [18, 19], tileVertices, x, y, z);
-        this.onCollision = () => {
-            die();
-            dialog("YOU WERE CAUGHT BY THE D.E.A.",null,'assets/dea.png');
-        };
-        this.animations.walking = {
-            "timePerFrame": 200,
-            "counter": 0,
-            "textureIndices": [0, 1],
-            "indexPointer": 0,
-        };
-        this.animation = 'walking';
-        this.life = 15;
-    }
-}
-*/
 
 class DEA extends Enemy {
     constructor(x, y, z) {

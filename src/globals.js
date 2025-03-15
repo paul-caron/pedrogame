@@ -79,6 +79,9 @@ const textureURLs = [
     assetsRoot + 'credits.png',
     assetsRoot + 'bubblered.png',
     assetsRoot + 'font.png',
+    assetsRoot + 'skull.png',
+    assetsRoot + 'skull1.png',
+    assetsRoot + 'skull2.png',
 ];
 
 // vertices for the background x,y,z,u,v
