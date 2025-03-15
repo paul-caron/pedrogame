@@ -538,6 +538,8 @@ class Chest extends Fixture {
     }
 }
 
+
+/*
 class DEA extends Enemy {
     constructor(x, y, z) {
         super(sz, [18, 19], tileVertices, x, y, z);
@@ -555,8 +557,9 @@ class DEA extends Enemy {
         this.life = 15;
     }
 }
+*/
 
-class DEA2 extends Enemy {
+class DEA extends Enemy {
     constructor(x, y, z) {
         super(sz, [18, 19], tileVertices, x, y, z);
         this.onCollision = () => {

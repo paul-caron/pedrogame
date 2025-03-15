@@ -49,7 +49,7 @@ function newLevel(){
             let {x,y,halfWidth} = generator.spawningZone;
             let spawning = level.enemies.filter(e=>e.isColliding(x,y,halfWidth)).length === 0;
             if(spawning){
-                let dea = new DEA2(x,y,0);
+                let dea = new DEA(x,y,0);
                 this.drawables.push(dea);
                 this.movers.push(dea);
                 this.colliders.push(dea);
@@ -353,7 +353,6 @@ function Level3() {
 
 function Level4() {
     Object.assign(this, initLevel());
-
     let portal = new Portal(0.0, 0.2, 0.0);
     portal.onCollision = () => {
         protagonist.animation = "blink";
@@ -365,7 +364,6 @@ function Level4() {
             }, 'assets/portal.png');
         portal.onCollision = () => { };
     };
-
     let enemies = [];
     let enemyCount = 30;
     for (let i = 1; i <= enemyCount; i++) {
@@ -374,17 +372,6 @@ function Level4() {
         let x = Math.cos(angle) * radius;
         let y = Math.sin(angle) * radius;
         let dea = new DEA(x, y, 0.0);
-        dea.dx = 0;
-        dea.dy = 0;
-        dea.update = function (dt) {
-            if (!dt) return;
-            let homingTarget = protagonist.getPosition();
-            let dy = -dea.y + homingTarget.y;
-            let dx = -dea.x + homingTarget.x;
-            let angle = Math.atan2(dy, dx);
-            dea.dx = 0.0001 * dt * Math.cos(angle);
-            dea.dy = 0.0001 * dt * Math.sin(angle);
-        };
         dea.dying = () => {
             dialog(`${--enemyCount} enemies left`,null,'assets/dea.png');
             if (enemyCount === 0) {
@@ -394,7 +381,6 @@ function Level4() {
         };
         enemies.push(dea);
     }
-
     this.colliders = [...enemies];
     this.enemies = [...enemies];
     this.drawables = [...enemies];
