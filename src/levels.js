@@ -6,7 +6,7 @@ function initLevel() {
     return { colliders: [], enemies: [], drawables: [], movers: [], transitionProgress: 0.0 };
 }
 
-function newLevel(){
+function Level4(){
     Object.assign(this, initLevel());
     let grid = [
         "1111111111111111111111111",
@@ -52,17 +52,31 @@ function newLevel(){
     let door2 = bricks.filter(b=>{return b.x >= -sz * 20 && b.x < -sz*16 && b.y == -sz*1;});
     let door3 = bricks.filter(b=>{return b.x == -sz * 11 && b.y < sz*12 && b.y >= sz*8;});
     let generator = new Generator(-18*sz,-sz*18,0);
-    let generator2 = new Generator(-0*sz,sz*16,0);
+    let generator2 = new Generator(8*sz,sz*4,0);
     generator.dying = ()=>{
         door2.forEach(d=>{
             Object.assign(d, Doomed);
             d.lifetime = 0;
         });
-        door3.forEach(d=>{
-            Object.assign(d, Doomed);
-            d.lifetime = 0;
-        });
     };
+    generator2.dying = ()=>{
+        this.drawables.push(portal);
+        this.colliders.push(portal);
+    };
+    let portal = new Portal(17*sz,10*sz,0);
+    portal.onCollision = () => {
+        protagonist.animation = "blink";
+        controlsEnabled = false;
+        dialogBlocking("YOU FOUND THE EXIT",
+            () => {
+                protagonist.animation = "idle";
+                level = new Level5();
+            },
+            'assets/portal.png');
+        portal.onCollision = () => { };
+    };
+    let crate = new Crate(17*sz,-12*sz,0);
+    let crate2 = new Crate(-20*sz,12*sz,0);
     let sw = new Switch(17*sz,-12*sz,0);
     let oldonCollision = sw.onCollision.bind(sw);
     sw.onCollision=()=>{
@@ -77,9 +91,31 @@ function newLevel(){
         this.enemies.push(generator2);
         sw.onCollision = ()=>{};
     };
-    this.drawables = [...bricks, generator, sw];
-    this.colliders = [...bricks, sw, generator];
-    this.enemies = [generator];
+    let sw2 = new Switch(-20*sz,12*sz,0);
+    let oldonCollision2 = sw2.onCollision.bind(sw2);
+    sw2.onCollision=()=>{
+        oldonCollision2();
+        door3.forEach(d=>{
+            Object.assign(d, Doomed);
+            d.lifetime = 0;
+        });
+        sw.onCollision = ()=>{};
+    };
+    let oldonExpire = crate.onExpire.bind(crate);
+    crate.onExpire = ()=>{
+        oldonExpire();
+        this.drawables.push(sw);
+        this.colliders.push(sw);
+    };
+    let oldonExpire2 = crate2.onExpire.bind(crate2);
+    crate2.onExpire = ()=>{
+        oldonExpire2();
+        this.drawables.push(sw2);
+        this.colliders.push(sw2);
+    };
+    this.drawables = [...bricks,generator,crate,crate2];
+    this.colliders = [...bricks,generator,crate,crate2];
+    this.enemies = [generator,crate,crate2];
     this.movers = [generator];
 }
 
@@ -359,7 +395,7 @@ function Level3() {
     };
 }
 
-function Level4() {
+function Level4b() {
     Object.assign(this, initLevel());
     let portal = new Portal(0.0, 0.2, 0.0);
     portal.onCollision = () => {

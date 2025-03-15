@@ -365,8 +365,10 @@ class Enemy extends Drawable {
         this.halfWidth = sz;
         this.x = x;
         this.y = y;
+        this.z = z;
         this.life = 10;
         this.lifetime = Infinity;
+        this.lastWord = 'fuck';
         this.onExpire = () => {
             let shard1 = new Drawable(
                              this.textureIndices,
@@ -414,7 +416,7 @@ class Enemy extends Drawable {
 
             let chars = (()=>{
                 let results = [];
-                ['f','u','c','k','!'].forEach((letter,index,arr)=>{
+                this.lastWord.split('').forEach((letter,index,arr)=>{
                     let char = new Char(letter, sz/2, this.x + (1+index-arr.length/2)*sz/2, this.y - this.halfWidth*2, this.z);
                     Object.assign(char,Doomed);
                     results.push(char);
@@ -568,6 +570,17 @@ class Chest extends Fixture {
     open() {
         this.animations.idle.textureIndices = [1];
         this.onCollision = () => { };
+    }
+}
+
+class Crate extends Enemy {
+    constructor(x, y, z) {
+        super(sz, [47], tileVertices, x, y, z);
+        this.life = 40;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.lastWord = "";
     }
 }
 
