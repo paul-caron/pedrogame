@@ -21,7 +21,19 @@ function newLevel(){
         "1000000100000000000000001",
         "1000000100000000000000001",
         "1111111111111111111111111",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000001000001",
+        "1000000100000000000000001",
+        "1000000100000000000000001",
+        "1111111111111111111111111",
     ];
+    protagonist.setPosition(0,-sz*12);
     let bricks = (()=>{
         let results = [];
         grid.forEach((row,i)=>{
@@ -36,9 +48,22 @@ function newLevel(){
         });
         return results;
     })();
-    let door = bricks.filter(b=>{return b.x == -sz * 11 && b.y >= -sz*2 && b.y < sz*2;});
-    let generator = new Generator(-18*sz,-sz*8,0);
-    let sw = new Switch(17*sz,0,0);
+    let door = bricks.filter(b=>{return b.x == -sz * 11 && b.y >= -sz*14 && b.y < -sz*10;});
+    let door2 = bricks.filter(b=>{return b.x >= -sz * 20 && b.x < -sz*16 && b.y == -sz*1;});
+    let door3 = bricks.filter(b=>{return b.x == -sz * 11 && b.y < sz*12 && b.y >= sz*8;});
+    let generator = new Generator(-18*sz,-sz*18,0);
+    let generator2 = new Generator(-0*sz,sz*16,0);
+    generator.dying = ()=>{
+        door2.forEach(d=>{
+            Object.assign(d, Doomed);
+            d.lifetime = 0;
+        });
+        door3.forEach(d=>{
+            Object.assign(d, Doomed);
+            d.lifetime = 0;
+        });
+    };
+    let sw = new Switch(17*sz,-12*sz,0);
     let oldonCollision = sw.onCollision.bind(sw);
     sw.onCollision=()=>{
         oldonCollision();
@@ -46,6 +71,10 @@ function newLevel(){
             Object.assign(d, Doomed);
             d.lifetime = 0;
         });
+        this.drawables.push(generator2);
+        this.movers.push(generator2);
+        this.colliders.push(generator2);
+        this.enemies.push(generator2);
         sw.onCollision = ()=>{};
     };
     this.drawables = [...bricks, generator, sw];

@@ -843,6 +843,10 @@ class Protagonist extends Drawable {
     getPosition() {
         return { x: -worldOffsetX, y: -worldOffsetY };
     }
+    setPosition(x,y) {
+        worldOffsetX = -x;
+        worldOffsetY = -y;
+    }
 };
 
 class NPC extends Fixture {
