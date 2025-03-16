@@ -1087,11 +1087,9 @@ function Level14() {
     protagonist.defaultEffect = 5;
     framebuffer.option = 5;
 
-
     dialogBlocking(`"I am Grump."`, () => {
         dialogBlocking(`"I will make your nightmares great again!"`,null,'assets/grump.png');
     },'assets/grump.png');
-
 
     let portal = new Portal(0.0, -32 * sz, 0.0);
     portal.onCollision = () => {
@@ -1127,132 +1125,8 @@ function Level14() {
     })();
 
     let eye = new Eye_Boss(0,-0.4,0);
-    eye.isBlockable = false;
-    eye.animationTime = 10000;
-    eye.patrolY = 0.4;
-    eye.resetReloadTime = () => {eye.reloadTime = 200;};
-    eye.resetReloadTime();
-    eye.update = (dt) => {
-        if(!dt) return ;
-        eye.animationTime -= dt;
-
-        //loop animation cycle
-        if(eye.animationTime < 0){
-          eye.animationTime = 10000;
-          eye.patrolY *= -1;
-        }
-
-        //seek
-        if(eye.animationTime <= 5000){
-          let {x,y} = protagonist.getPosition();
-          let dx = x - eye.x;
-          let dy = y - eye.y;
-          let angle = Math.atan2(dy,dx);
-          let dist = Math.hypot(dy,dx);
-          let force = 0.000005 * dt;
-          eye.dx +=  force * Math.cos(angle);
-          eye.dy +=  force * Math.sin(angle);
-        }
-
-        //patrol
-        if(eye.animationTime > 5000){
-          let x = 0;
-          let y = eye.patrolY;
-          let dx = x - eye.x;
-          let dy = y - eye.y;
-          let angle = Math.atan2(dy,dx);
-          let d = 0.0003 * dt;
-          eye.dx =  d * Math.cos(angle);
-          eye.dy =  d * Math.sin(angle);
-          //shoot
-          if(eye.animationTime < 6000){
-            eye.reloadTime -= dt;
-            if(eye.reloadTime < 0) {eye.resetReloadTime();
-            let n = 6;
-            for(let i = 0; i < n; ++i){
-              let bubble = new Bubble(eye.x, eye.y, 0);
-              bubble.lifetime = 6000;
-              let angle = 2 * Math.PI / n * i;
-              bubble.update = (dt) => {
-                  bubble.dx = Math.cos(angle + Math.PI/360) * 0.0003 * dt;
-                  bubble.dy = Math.sin(angle + Math.PI/360) * 0.0003 * dt;
-                  angle += Math.PI/360;
-              };
-
-              bubble.onCollision = ()=>{
-                  die();
-                  dialog("YOU WERE CAUGHT BY THE EVIL EYE",null,'assets/eye.png');
-              };
-              level.drawables.push(bubble);
-              level.colliders.push(bubble);
-              level.movers.push(bubble);
-            }
-          }
-          }
-        }
-    };
 
     let grump = new Grump_Boss(0,-0.4,0);
-    grump.reloadTime = 2000;
-    let oldMove = grump.move.bind(grump);
-    grump.move = (dt) => {
-        oldMove(dt);
-        grump.reloadTime -= dt;
-        if(grump.reloadTime < 0){
-            grump.reloadTime = 2000;
-            if(!grump.dead){
-                let bubble = new Bubble(grump.x, grump.y, 0);
-                bubble.explode = () => {
-                    let max = sz*6;
-                    bubble.halfWidth += sz/150 *dt;
-                    bubble.halfWidth = (bubble.halfWidth<max)?bubble.halfWidth: max;
-                    bubble.vertices = getVertices(bubble.halfWidth);
-                    if(bubble.halfWidth === max) bubble.lifetime = 0;
-                };
-                bubble.lifetime = 2000;
-                let target = protagonist.getPosition();
-                bubble.update = (dt) => {
-                    let dx = target.x - bubble.x;
-                    let dy = target.y - bubble.y;
-                    if(Math.abs(dx+dy)<sz){
-                        bubble.explode();
-                    }
-                    let angle = Math.atan2(dy, dx);
-                    bubble.dx = Math.cos(angle) * dt * 0.0003;
-                    bubble.dy = Math.sin(angle) * dt * 0.0003;
-                };
-                bubble.onCollision = () => {
-                    dialog("YOU WERE CAUGHT BY GRUMP. NO HAPPY ENDING",null,'assets/grump.png');
-                    die();
-                    bubble.dy = 0;
-                    bubble.dx = 0;
-                };
-                this.drawables.push(bubble);
-                this.movers.push(bubble);
-                this.colliders.push(bubble);
-            }
-        }
-
-    };
-
-    let animationCounter = 10000;
-    grump.update = function (dt) {
-        let target = { x: 0, y: -0.4 };
-        let speed = 0.5;
-        if (animationCounter < 2000) {
-            target = protagonist.getPosition();
-            speed = 1.2;
-        }
-        if (!dt) return;
-        let dy = -grump.y + target.y;
-        let dx = -grump.x + target.x;
-        let angle = Math.atan2(dy, dx);
-        grump.dx = speed * 0.0003 * dt * Math.cos(angle);
-        grump.dy = speed * 0.0003 * dt * Math.sin(angle);
-
-        animationCounter -= dt;
-        if (animationCounter < 0) animationCounter = 10000;
-    };
 
     this.colliders = [grump, ...bricks];
     this.enemies = [grump];

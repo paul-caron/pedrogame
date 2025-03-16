@@ -240,7 +240,6 @@ const Mover = {
         this.previousY = this.y;
         this.x += this.dx;
         this.y += this.dy;
-//        this.update(dt);
     },
     update: function (dt) { // to override
         //this.dx = ...;
@@ -646,12 +645,70 @@ class Grump_Boss extends Enemy {
         };
         this.animation = 'walking';
         this.life = 5000;
+        this.animationCounter = 10000;
+        this.reloadTime = 2000;
+        this.update = (dt) => {
+            if (!dt) return;
+
+            // MOVE
+            this.animationCounter -= dt;
+            if (this.animationCounter < 0) this.animationCounter = 10000;
+
+            let target = { x: 0, y: -0.4 };
+            let speed = 0.5;
+            if (this.animationCounter < 2000) {
+                target = protagonist.getPosition();
+                speed = 1.2;
+            }
+            let dy = -this.y + target.y;
+            let dx = -this.x + target.x;
+            let angle = Math.atan2(dy, dx);
+            this.dx = speed * 0.0003 * dt * Math.cos(angle);
+            this.dy = speed * 0.0003 * dt * Math.sin(angle);
+
+            // SHOOT
+            this.reloadTime -= dt;
+            if(this.reloadTime < 0){
+                this.reloadTime = 2000;
+                if(!this.dead){
+                    let bubble = new Bubble(this.x, this.y, 0);
+                    bubble.explode = () => {
+                        let max = sz*6;
+                        bubble.halfWidth += sz/150 * dt;
+                        bubble.halfWidth = (bubble.halfWidth<max)?bubble.halfWidth: max;
+                        bubble.vertices = getVertices(bubble.halfWidth);
+                        if(bubble.halfWidth === max) bubble.lifetime = 0;
+                    };
+                    bubble.lifetime = 2000;
+                    let target = protagonist.getPosition();
+                    bubble.update = (bdt) => {
+                        let dx = target.x - bubble.x;
+                        let dy = target.y - bubble.y;
+                        if(Math.abs(dx+dy)<sz){
+                            bubble.explode();
+                        }
+                        let angle = Math.atan2(dy, dx);
+                        bubble.dx = Math.cos(angle) * bdt * 0.0003;
+                        bubble.dy = Math.sin(angle) * bdt * 0.0003;
+                    };
+                    bubble.onCollision = () => {
+                        dialog("YOU WERE CAUGHT BY GRUMP. NO HAPPY ENDING",null,'assets/grump.png');
+                        die();
+                        bubble.dy = 0;
+                        bubble.dx = 0;
+                    };
+                    level.drawables.push(bubble);
+                    level.movers.push(bubble);
+                    level.colliders.push(bubble);
+                }
+            }
+        };
     }
 };
 
 class Eye_Boss extends Enemy {
     constructor(x, y, z) {
-        super(boss_sz, [34,35,36], bossVertices, x, y, z);
+        super(boss_sz, [36,34,35], bossVertices, x, y, z);
         this.onCollision = () => {
             die();
             dialog("YOU WERE CAUGHT BY THE EVIL EYE",null,'assets/eye.png');
@@ -659,11 +716,77 @@ class Eye_Boss extends Enemy {
         this.animations.walking = {
             "timePerFrame": 200,
             "counter": 0,
-            "textureIndices": [0, 1],
+            "textureIndices": [1, 2],
             "indexPointer": 0,
         };
         this.animation = 'walking';
         this.life = 5000;
+        this.isBlockable = false;
+        this.animationTime = 10000;
+        this.patrolY = 0.4;
+        this.resetReloadTime = () => {this.reloadTime = 200;};
+        this.resetReloadTime();
+
+        this.update = (dt) => {
+
+            if(!dt) return ;
+            this.animationTime -= dt;
+
+            //loop animation cycle
+            if(this.animationTime < 0){
+              this.animationTime = 10000;
+              this.patrolY *= -1;
+            }
+
+            //seek
+            if(this.animationTime <= 5000){
+              let {x,y} = protagonist.getPosition();
+              let dx = x - this.x;
+              let dy = y - this.y;
+              let angle = Math.atan2(dy,dx);
+              let dist = Math.hypot(dy,dx);
+              let force = 0.000005 * dt;
+              this.dx +=  force * Math.cos(angle);
+              this.dy +=  force * Math.sin(angle);
+            }
+
+            //patrol
+            if(this.animationTime > 5000){
+              let x = 0;
+              let y = this.patrolY;
+              let dx = x - this.x;
+              let dy = y - this.y;
+              let angle = Math.atan2(dy,dx);
+              let d = 0.0003 * dt;
+              this.dx =  d * Math.cos(angle);
+              this.dy =  d * Math.sin(angle);
+              //shoot
+              if(this.animationTime < 6000){
+                this.reloadTime -= dt;
+                if(this.reloadTime < 0) {
+                  this.resetReloadTime();
+                  let n = 6;
+                  for(let i = 0; i < n; ++i){
+                    let bubble = new Bubble(this.x, this.y, 0);
+                    bubble.lifetime = 6000;
+                    let angle = 2 * Math.PI / n * i;
+                    bubble.update = (bdt) => {
+                        bubble.dx = Math.cos(angle + Math.PI/360) * 0.0003 * bdt;
+                        bubble.dy = Math.sin(angle + Math.PI/360) * 0.0003 * bdt;
+                        angle += Math.PI/180;
+                    };
+                    bubble.onCollision = ()=>{
+                        die();
+                        dialog("YOU WERE CAUGHT BY THE EVIL EYE",null,'assets/eye.png');
+                    };
+                    level.drawables.push(bubble);
+                    level.colliders.push(bubble);
+                    level.movers.push(bubble);
+                  }
+                }
+              }
+            }
+        }; //end update
     }
 };
 
