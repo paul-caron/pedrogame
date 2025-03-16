@@ -661,6 +661,8 @@ function Level7() {
         portal.onCollision = () => { };
     };
 
+    let ice = new ICE(0,-sz*30,0);
+
     const n = 100;
     let npc = new NPC(0, -sz * 6, 0, `"Help this poor old farmer. Please collect ${n} of these plants"`);
     let oldonCollision = npc.onCollision.bind(npc);
@@ -685,8 +687,9 @@ function Level7() {
         }
         return results;
     })();
-    this.drawables = [npc, ...leaves];
-    this.colliders = [npc, ...leaves];
+    this.drawables = [ice,npc, ...leaves];
+    this.colliders = [ice,npc, ...leaves];
+    this.movers = [ice];
 }
 
 function Level8b() {
