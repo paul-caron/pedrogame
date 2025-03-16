@@ -741,6 +741,53 @@ class ICE_Boss extends Enemy {
         };
         this.animation = 'walking';
         this.life = 4500;
+
+        this.animationCounter = 10000;
+        this.reloadTime = 2000;
+
+        this.update = function (dt) {
+            if (!dt) return;
+            this.animationCounter -= dt;
+            if (this.animationCounter < 0) this.animationCounter = 10000;
+
+            // MOVE
+            let target = { x: 0, y: -0.4 };
+            let speed = 0.5;
+            if (this.animationCounter < 2000) {
+                target = protagonist.getPosition();
+                speed = 1.2;
+            }
+            let dy = -this.y + target.y;
+            let dx = -this.x + target.x;
+            let angle = Math.atan2(dy, dx);
+            this.dx = speed * 0.0003 * dt * Math.cos(angle);
+            this.dy = speed * 0.0003 * dt * Math.sin(angle);
+
+            // SHOOT
+            this.reloadTime -= dt;
+            if(this.reloadTime < 0){
+                this.reloadTime = 2000;
+                if(!this.dead){
+                    let {x,y} = protagonist.getPosition();
+                    let angle = Math.atan2(y-this.y,x-this.x);
+                    let bubble = new Bubble(this.x, this.y, 0);
+                    bubble.lifetime = 2000;
+                    bubble.update = (bdt)=>{
+                        bubble.dx = Math.cos(angle) * bdt * 0.0003;
+                        bubble.dy = Math.sin(angle) * bdt * 0.0003;
+                    }
+                    bubble.onCollision = () => {
+                        die();
+                        dialog("YOU WERE CAUGHT BY I.C.E.",null,'assets/ice.png');
+                        bubble.dy = 0;
+                        bubble.dx = 0;
+                    };
+                    level.colliders.push(bubble);
+                    level.drawables.push(bubble);
+                    level.movers.push(bubble);
+                }
+            };
+        };
     }
 };
 
@@ -749,7 +796,7 @@ class DOGE extends Enemy {
         super(sz, [28, 29], tileVertices, x, y, z);
         this.onCollision = () => {
             die();
-            dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'doge.png');
+            dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
         };
         this.animations.walking = {
             "timePerFrame": 200,
@@ -759,7 +806,80 @@ class DOGE extends Enemy {
         };
         this.animation = 'walking';
         this.life = 60;
-    }
+        this.reloadTime = 2000;
+        this.update = (dt) => {
+            this.reloadTime -= dt;
+            if(this.reloadTime < 0){
+                this.reloadTime = 2000;
+                if(!this.dead){
+                    let bubble = new Bubble(this.x, this.y, 0);
+                    bubble.initialLifetime = 2000;
+                    let {x,y} = protagonist.getPosition();
+                    let angle = Math.atan2(y-this.y,x-this.x);
+                    bubble.dx = Math.cos(angle) * dt * 0.0003;
+                    bubble.dy = Math.sin(angle) * dt * 0.0003;
+                    bubble.lifetime = bubble.initialLifetime;
+                    bubble.onCollision = () => {
+                        die();
+                        dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
+                        bubble.dy = 0;
+                        bubble.dx = 0;
+                    };
+                    bubble.onExpire=()=>{
+                      if(bubble.initialLifetime<500) return;
+                      mult(bubble);
+                    }
+                    level.colliders.push(bubble);
+                    level.drawables.push(bubble);
+                    level.movers.push(bubble);
+                    let mult=(parent)=>{
+                        let newBubble = new Bubble(parent.x, parent.y, 0, parent.halfWidth/2);
+                        newBubble.initialLifetime = parent.initialLifetime/2;
+                        newBubble.lifetime = parent.initialLifetime/2;
+                        let angle = Math.atan2(parent.dy,parent.dx);
+                        let newAngle = angle + Math.PI/2;
+                        newBubble.update = (bdt) => {
+                          newBubble.dx = Math.cos(newAngle) * bdt * 0.0003;
+                          newBubble.dy = Math.sin(newAngle) * bdt * 0.0003;
+                        };
+                        let newBubble2 = new Bubble(parent.x, parent.y, 0, parent.halfWidth/2);
+                        newBubble2.initialLifetime = parent.initialLifetime/2;
+                        newBubble2.lifetime = parent.initialLifetime/2;
+                        let newAngle2 = angle - Math.PI/2;
+                        newBubble2.update = (bdt) => {
+                          newBubble2.dx = Math.cos(newAngle2) * bdt * 0.0003;
+                          newBubble2.dy = Math.sin(newAngle2) * bdt * 0.0003;
+                        };
+                        newBubble.onExpire=()=>{
+                          if(newBubble.initialLifetime<500) return;
+                          mult(newBubble);
+                        }
+                        newBubble2.onExpire=()=>{
+                          if(newBubble2.initialLifetime<500) return;
+                          mult(newBubble2);
+                        }
+
+                        newBubble.onCollision = () => {
+                          die();
+                          dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
+                          newBubble.dy = 0;
+                          newBubble.dx = 0;
+                        };
+                        newBubble2.onCollision = () => {
+                          die();
+                          dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
+                          newBubble2.dy = 0;
+                          newBubble2.dx = 0;
+                       };
+
+                       level.colliders.push(newBubble,newBubble2);
+                       level.drawables.push(newBubble,newBubble2);
+                       level.movers.push(newBubble,newBubble2);
+                   }; //mult end
+               } //end if
+           }; //end if
+        }; //end update
+    } //end constructor
 };
 
 
@@ -778,6 +898,100 @@ class DOGE_Boss extends Enemy {
         };
         this.animation = 'walking';
         this.life = 5000;
+        this.animationCounter = 10000;
+        this.reloadTime = 2000;
+        this.update = (dt) => {
+            if (!dt) return;
+            this.animationCounter -= dt;
+            if (this.animationCounter < 0) this.animationCounter = 10000;
+
+            // MOVE
+            let target = { x: 0, y: -0.4 };
+            let speed = 0.5;
+            if (this.animationCounter < 2000) {
+                target = protagonist.getPosition();
+                speed = 1.2;
+            }
+            let dy = -this.y + target.y;
+            let dx = -this.x + target.x;
+            let angle = Math.atan2(dy, dx);
+            this.dx = speed * 0.0003 * dt * Math.cos(angle);
+            this.dy = speed * 0.0003 * dt * Math.sin(angle);
+
+            // SHOOT
+            this.reloadTime -= dt;
+            if(this.reloadTime < 0){
+                this.reloadTime = 2000;
+                if(!this.dead){
+                    let bubble = new Bubble(this.x, this.y, 0);
+                    bubble.initialLifetime = 2000;
+                    let {x,y} = protagonist.getPosition();
+                    let angle = Math.atan2(y-this.y,x-this.x);
+                    bubble.update = (bdt) => {
+                        bubble.dx = Math.cos(angle) * bdt * 0.0003;
+                        bubble.dy = Math.sin(angle) * bdt * 0.0003;
+                    }
+                    bubble.lifetime = bubble.initialLifetime;
+                    bubble.onCollision = () => {
+                        die();
+                        dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
+                        bubble.dy = 0;
+                        bubble.dx = 0;
+                    };
+                    bubble.onExpire=()=>{
+                      if(bubble.initialLifetime<500) return;
+                      mult(bubble);
+                    }
+                    level.colliders.push(bubble);
+                    level.drawables.push(bubble);
+                    level.movers.push(bubble);
+                    let mult=(parent)=>{
+                        let newBubble = new Bubble(parent.x, parent.y, 0, parent.halfWidth/2);
+                        newBubble.initialLifetime = parent.initialLifetime/2;
+                        newBubble.lifetime = parent.initialLifetime/2;
+                        let angle = Math.atan2(parent.dy,parent.dx);
+                        let newAngle = angle + Math.PI/2;
+                        newBubble.update = (bdt) => {
+                            newBubble.dx = Math.cos(newAngle) * bdt * 0.0003;
+                            newBubble.dy = Math.sin(newAngle) * bdt * 0.0003;
+                        };
+                        let newBubble2 = new Bubble(parent.x, parent.y, 0, parent.halfWidth/2);
+                        newBubble2.initialLifetime = parent.initialLifetime/2;
+                        newBubble2.lifetime = parent.initialLifetime/2;
+                        let newAngle2 = angle - Math.PI/2;
+                        newBubble2.update = (bdt) => {
+                            newBubble2.dx = Math.cos(newAngle2) * bdt * 0.0003;
+                            newBubble2.dy = Math.sin(newAngle2) * bdt * 0.0003;
+                        };
+                        newBubble.onExpire=()=>{
+                          if(newBubble.initialLifetime<500) return;
+                          mult(newBubble);
+                        }
+                        newBubble2.onExpire=()=>{
+                          if(newBubble2.initialLifetime<500) return;
+                          mult(newBubble2);
+                        }
+
+                        newBubble.onCollision = () => {
+                          die();
+                          dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
+                          newBubble.dy = 0;
+                          newBubble.dx = 0;
+                        };
+                        newBubble2.onCollision = () => {
+                          die();
+                          dialog("YOU WERE CAUGHT BY D.O.G.E.",null,'assets/doge.png');
+                          newBubble2.dy = 0;
+                          newBubble2.dx = 0;
+                       };
+
+                       level.colliders.push(newBubble,newBubble2);
+                       level.drawables.push(newBubble,newBubble2);
+                       level.movers.push(newBubble,newBubble2);
+                   }; //mult end
+               } //end if
+           }; //end if
+        }; //end update
     }
 };
 
