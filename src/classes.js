@@ -312,6 +312,7 @@ class Bullet extends Drawable {
         Object.assign(this, Mover);
         Object.assign(this, Doomed);
         Object.assign(this, Collider);
+        this.isBullet = true;
         this.isBlockable = false;
         this.isBlocking = false;
         this.halfWidth = sz;

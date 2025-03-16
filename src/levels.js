@@ -265,8 +265,14 @@ function Level13() {
         portal.onCollision = () => { };
     };
 
+    let generator = new Generator(-sz*36,0,0,DEA);
+    let generator2 = new Generator(sz*36,0,0,ICE);
+    let generator3 = new Generator(0,-sz*36,0,DOGE);
 
     this.drawables = [
+        generator,
+        generator2,
+        generator3,
         ...puzzle.switches,
         ...puzzle.shards,
         ...puzzle2.switches,
@@ -277,11 +283,19 @@ function Level13() {
         sw1,sw2,sw3,portal,
     ];
     this.colliders = [
+        generator,
+        generator2,
+        generator3,
         ...puzzle.switches,
         ...puzzle2.switches,
         ...puzzle3.switches,
         ...bricks,
         sw1,sw2,sw3,portal,
+    ];
+    this.movers =[
+        generator,
+        generator2,
+        generator3,
     ];
     puzzle.onSolve = () => {
         this.drawables = this.drawables.filter(d=>{

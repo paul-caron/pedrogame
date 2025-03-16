@@ -46,7 +46,7 @@ async function start(){
         protagonist = new Protagonist();
 
 // DEBUG / TESTING
-//        level = new Level7();
+//        level = new Level13();
 //        protagonist.ammoType = 'fjkldjslfk';
 //        protagonist.weapon = 'double';
 //        protagonist.strength = 2;
@@ -109,7 +109,7 @@ async function start(){
                         bullets.forEach((b) => {
                             if (e.isColliding(b.x, b.y, sz)) {
                                 if (e.dead) return;
-                                if(!e.isEnemy){
+                                if(!e.isEnemy && e.isBlocking){
                                     b.dx = 0;
                                     b.dy = 0;
                                     b.lifetime = 0;
