@@ -450,11 +450,11 @@ class Generator extends Enemy {
                 let spawning = level.enemies.
                     filter(e=>e.isColliding(x,y,halfWidth)).length===0;
                 if(spawning){
-                    let dea = new classtype(x,y,0);
-                    level.drawables.push(dea);
-                    level.movers.push(dea);
-                    level.colliders.push(dea);
-                    level.enemies.push(dea);
+                    let enemy = new classtype(x,y,0);
+                    level.drawables.push(enemy);
+                    level.movers.push(enemy);
+                    level.colliders.push(enemy);
+                    level.enemies.push(enemy);
                     this.generationTime = generationTime;
                 }
             }
@@ -1153,6 +1153,8 @@ class Protagonist extends Drawable {
 
         let dx = this.dx;
         let dy = this.dy;
+        let angle = Math.atan2(dy, dx);
+        let speed = 0.0006 ;
 
         if(this.chargedTime >= 3000){
             this.attack2(); return;
@@ -1160,8 +1162,10 @@ class Protagonist extends Drawable {
 
         let shoot = (offX,offY) => {
           let bullet = new Bullet(sz, [13, 14, 15, 16], tileVertices, 0.0, 0.0, 0.0);
-          bullet.dx = dx;
-          bullet.dy = dy;
+          bullet.update = (dt) => {
+              bullet.dx = Math.cos(angle) * speed * dt;
+              bullet.dy = Math.sin(angle) * speed * dt;
+          }
           bullet.x = -worldOffsetX + offX;
           bullet.y = -worldOffsetY + offY;
           bullet.lifetime = 2000;

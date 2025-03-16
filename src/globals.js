@@ -188,13 +188,17 @@ function restart(){
 }
 
 function die() {
+    framebuffer.option = 2;
     protagonist.dead = true;
     audio.pause();
     audio = document.querySelector("#ether");
     audio.play();
     setTimeout(()=>{
         let answer = confirm('restart level?');
-        if(answer) restart();
+        if(answer){
+            framebuffer.option = 0;
+            restart();
+        }
     }, 6000);
 }
 

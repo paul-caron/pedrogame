@@ -25,6 +25,7 @@
     <button id="music">🎵</button>
     <button id="zoomIn" onClick="if(zoomFactor>0)zoomFactor-=0.25;">&plus;</button>
     <button id="zoomOut" onClick="if(zoomFactor<2)zoomFactor+=0.25;">&minus;</button>
+    <button id="restart" onClick="die();">💀</button>
     <canvas id="webglCanvas"></canvas>
     <script src="src/globals.js"></script>
     <script src="src/classes.js"></script>
@@ -36,7 +37,7 @@
 async function start(){
     try {
 
-        //INIT
+        // INITIALIZATION
         await initWebGL(); //init canvas, webgl context, textures, programs, attributes and uniform locations
         initEvents(); //keyboard and touch events
         level = new Level1();
@@ -44,13 +45,12 @@ async function start(){
         framebuffer = new Framebuffer();
         protagonist = new Protagonist();
 
-//debug
+// DEBUG / TESTING
 //        level = new Level14();
 //        protagonist.ammoType = 'fjkldjslfk';
 //        protagonist.weapon = 'double';
 //        protagonist.strength = 2;
 //        protagonist.speed = 2;
-
 
         // THE LOOP
         let previousTime = 0; //time of the last rendering
@@ -60,6 +60,7 @@ async function start(){
             if (!(dt < 10))
                 previousTime = time;
 
+            // FRAME LIMITING CONDITIONS
             if(!dt || dt > 32 || dt < 10 || protagonist.dead){}
             else{
 
@@ -99,11 +100,11 @@ async function start(){
                         b.positionOffset = [worldOffsetX, worldOffsetY, 0.0];
                         b.draw(dt);
                         b.move(dt);
+                        b.update(dt);
                     });
 
                     // CHECK COLLISION BETWEEN ENEMIES AND BULLETS
                     level.colliders.forEach((e) => {
-//                    level.enemies.forEach((e) => {
                         if (e.dead) return;
                         bullets.forEach((b) => {
                             if (e.isColliding(b.x, b.y, sz)) {
@@ -150,8 +151,6 @@ async function start(){
                         blockings.forEach((blocking)=>{
                             if(blocking === blockable) return;
                             if(blockable.isColliding(blocking.x,blocking.y,blocking.halfWidth)){
-//                                blockable.x = blockable.previousX;
-//                                blockable.y = blockable.previousY;
                                 // NON STICKY / WALL SLIDE
                                 if(Math.abs(blocking.y-blockable.y) < Math.abs(blocking.x-blockable.x)){  
                                     blockable.x = blockable.previousX;
