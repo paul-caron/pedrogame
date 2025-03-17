@@ -368,7 +368,7 @@ class Enemy extends Drawable {
         this.z = z;
         this.life = 10;
         this.lifetime = Infinity;
-        this.lastWord = 'fuck';
+        this.lastWord = 'rip';
         this.onExpire = () => {
             let shard1 = new Drawable(
                              this.textureIndices,
@@ -417,7 +417,13 @@ class Enemy extends Drawable {
             let chars = (()=>{
                 let results = [];
                 this.lastWord.split('').forEach((letter,index,arr)=>{
-                    let char = new Char(letter, sz/2, this.x + (1+index-arr.length/2)*sz/2, this.y - this.halfWidth*2, this.z);
+                    let char = new Char(
+                        letter,
+                        sz/2,
+                        this.x + 0.5*sz*(0.5+index-arr.length/2),
+                        this.y - this.halfWidth*2,
+                        this.z
+                    );
                     Object.assign(char,Doomed);
                     results.push(char);
                 });
