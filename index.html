@@ -33,6 +33,7 @@
     <script src="src/events.js"></script>
     <script src="src/webgl.js"></script>
 <script>
+"use strict";
 
 async function start(){
     try {
@@ -46,9 +47,9 @@ async function start(){
         protagonist = new Protagonist();
 
 // DEBUG / TESTING
-//        level = new Level5();
-//        protagonist.ammoType = 'fjkldjslfk';
-//        protagonist.weapon = 'double';
+        level = new Level4();
+        protagonist.ammoType = 'fjkldjslfk';
+        protagonist.weapon = 'double';
 //        protagonist.strength = 2;
 //        protagonist.speed = 2;
 
@@ -99,8 +100,8 @@ async function start(){
                     bullets.forEach((b) => {
                         b.positionOffset = [worldOffsetX, worldOffsetY, 0.0];
                         b.draw(dt);
-                        b.move(dt);
                         b.update(dt);
+                        b.move(dt);
                     });
 
                     // CHECK COLLISION BETWEEN ENEMIES AND BULLETS
@@ -152,15 +153,20 @@ async function start(){
                     let blockings = level.colliders.filter(c=>c.isBlocking);
                     let blockables = level.colliders.filter(c=>c.isBlockable);
 
+                    blockables.sort((a,b)=>{let {x,y} = protagonist.getPosition();return ((b.y-y)**2+ (b.x-x)**2)-((a.y-y)**2+(a.x-x)**2);});
+
                     blockables.forEach((blockable)=>{
+                        blockings.sort((a,b)=>{let x = blockable.x; let y = blockable.y;return ((a.y-y)**2+( a.x-x)**2)-((b.y-y)**2+(b.x-x)**2);});
                         blockings.forEach((blocking)=>{
+//                            if(blocking.isEnemy) return; 
                             if(blocking === blockable) return;
                             if(blockable.isColliding(blocking.x,blocking.y,blocking.halfWidth)){
                                 // NON STICKY / WALL SLIDE
-                                if(Math.abs(blocking.y-blockable.y) < Math.abs(blocking.x-blockable.x)){  
+                                if(Math.abs(blocking.y-blockable.previousY) < Math.abs(blocking.x-blockable.previousX)){  
                                     blockable.x = blockable.previousX;
-                                }else if(Math.abs(blocking.x-blockable.x) < Math.abs(blocking.y-blockable.y)){  
+                                }else if(Math.abs(blocking.x-blockable.previousX) < Math.abs(blocking.y-blockable.previousY)){  
                                     blockable.y = blockable.previousY;
+                                    
                                 }else{ 
                                     blockable.x = blockable.previousX;
                                     blockable.y = blockable.previousY;
@@ -199,11 +205,12 @@ async function start(){
                     let collided = level.colliders.filter(c=>c.isColliding(-worldOffsetX,-worldOffsetY,sz));
                     collided.sort((a,b)=>{
                         let [x,y] = [-oldOffsetX,-oldOffsetY];
-                        return (Math.hypot(a.x-x,a.y-y)) > (Math.hypot(b.x-x,b.y-y));
+                        return (Math.hypot(a.x-x,a.y-y)) - (Math.hypot(b.x-x,b.y-y));
                     });
                     collided.forEach((c) => {
                         if (c.isColliding(-worldOffsetX, -worldOffsetY, sz)) {
                             c.onCollision();
+                            c.colorModifier=[2.0,1.0,1.0,1.0];
                         }else{
                             return ;
                         }
