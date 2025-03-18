@@ -47,9 +47,9 @@ async function start(){
         protagonist = new Protagonist();
 
 // DEBUG / TESTING
-        level = new Level4();
-        protagonist.ammoType = 'fjkldjslfk';
-        protagonist.weapon = 'double';
+//        level = new Level4();
+//        protagonist.ammoType = 'fjkldjslfk';
+//        protagonist.weapon = 'double';
 //        protagonist.strength = 2;
 //        protagonist.speed = 2;
 
@@ -144,21 +144,19 @@ async function start(){
 
                     // MOVERS
                     level.movers.forEach(m => {
-                        m.move(dt);
                         m.update(dt);
+                        m.move(dt);
                     });
-
 
                     // COLLISION CHECK BETWEEN COLLIDERS THEN REVERSE MOVEMENT IF BLOCKED
                     let blockings = level.colliders.filter(c=>c.isBlocking);
                     let blockables = level.colliders.filter(c=>c.isBlockable);
 
-                    blockables.sort((a,b)=>{let {x,y} = protagonist.getPosition();return ((b.y-y)**2+ (b.x-x)**2)-((a.y-y)**2+(a.x-x)**2);});
+                    blockables.sort((a,b)=>{let {x,y} = protagonist.getPosition();return ((b.y-y)**2+(b.x-x)**2)-((a.y-y)**2+(a.x-x)**2);});
 
                     blockables.forEach((blockable)=>{
                         blockings.sort((a,b)=>{let x = blockable.x; let y = blockable.y;return ((a.y-y)**2+( a.x-x)**2)-((b.y-y)**2+(b.x-x)**2);});
                         blockings.forEach((blocking)=>{
-//                            if(blocking.isEnemy) return; 
                             if(blocking === blockable) return;
                             if(blockable.isColliding(blocking.x,blocking.y,blocking.halfWidth)){
                                 // NON STICKY / WALL SLIDE
@@ -187,8 +185,8 @@ async function start(){
                     // CONTROLS
                     const d = 0.0003 * protagonist.speed * dt; //delta or offset change
 
-                    let oldOffsetX = new Number(worldOffsetX);
-                    let oldOffsetY = new Number(worldOffsetY);
+                    oldOffsetX = worldOffsetX;
+                    oldOffsetY = worldOffsetY;
 
                     if (keys["ArrowLeft"]) { worldOffsetX += d; }
                     if (keys["ArrowRight"]) { worldOffsetX -= d; }
@@ -205,7 +203,7 @@ async function start(){
                     let collided = level.colliders.filter(c=>c.isColliding(-worldOffsetX,-worldOffsetY,sz));
                     collided.sort((a,b)=>{
                         let [x,y] = [-oldOffsetX,-oldOffsetY];
-                        return (Math.hypot(a.x-x,a.y-y)) - (Math.hypot(b.x-x,b.y-y));
+                        return ((a.x-x)**2+(a.y-y)**2)-((b.x-x)**2+(b.y-y)**2);
                     });
                     collided.forEach((c) => {
                         if (c.isColliding(-worldOffsetX, -worldOffsetY, sz)) {

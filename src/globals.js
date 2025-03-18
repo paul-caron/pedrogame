@@ -20,8 +20,10 @@ let program2; //lines
 let program3; //framebuffer
 let textures;
 let zoomFactor = 1.25;
-let worldOffsetX = new Number(0);
-let worldOffsetY = new Number(0);
+let worldOffsetX = 0;
+let worldOffsetY = 0;
+let oldOffsetX = 0;
+let oldOffsetY = 0;
 let keys = {};
 let controlsEnabled = true;
 let collectables = {
