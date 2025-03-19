@@ -22,6 +22,8 @@ let textures;
 let zoomFactor = 1.25;
 let worldOffsetX = 0;
 let worldOffsetY = 0;
+let oldOffsetX = 0;
+let oldOffsetY = 0;
 let keys = {};
 let controlsEnabled = true;
 let collectables = {
