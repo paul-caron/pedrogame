@@ -42,7 +42,7 @@ async function start(){
         await initWebGL(); //init canvas, webgl context, textures, programs, attributes and uniform locations
         initEvents(); //keyboard and touch events
         level = new Level1();
-        background = new Drawable([0], backgroundVertices);
+        background = new Drawable([48,0], backgroundVertices);
         framebuffer = new Framebuffer();
         protagonist = new Protagonist();
 
@@ -250,7 +250,7 @@ async function start(){
     }
 }
 
-onload = start();
+window.onload = start;
 
 </script>
 </body>

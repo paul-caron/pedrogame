@@ -1,8 +1,6 @@
 "use strict";
 
 // Globals
-let frameBuffer;
-let frameBufferTexture;
 let dialogTimeoutId;
 let canvas;
 let level;
@@ -85,6 +83,7 @@ const textureURLs = [
     assetsRoot + 'skull1.png',
     assetsRoot + 'skull2.png',
     assetsRoot + 'crate.png',
+    assetsRoot + 'conway.png',
 ];
 
 // vertices for the background x,y,z,u,v
